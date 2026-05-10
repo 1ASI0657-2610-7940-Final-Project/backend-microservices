@@ -3,6 +3,12 @@ C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\access-profile-serv
 C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\access-profile-service\src\main\java\com\gigu\accessprofile\application\dto\SignUpCommand.java
 C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\access-profile-service\src\main\java\com\gigu\accessprofile\application\dto\UpdateProfileCommand.java
 C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\access-profile-service\src\main\java\com\gigu\accessprofile\application\dto\UploadPortfolioCommand.java
+C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\access-profile-service\src\main\java\com\gigu\accessprofile\application\exception\BusinessRuleViolationException.java
+C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\access-profile-service\src\main\java\com\gigu\accessprofile\application\exception\DuplicatedResourceException.java
+C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\access-profile-service\src\main\java\com\gigu\accessprofile\application\exception\ExternalServiceUnavailableException.java
+C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\access-profile-service\src\main\java\com\gigu\accessprofile\application\exception\InvalidStateTransitionException.java
+C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\access-profile-service\src\main\java\com\gigu\accessprofile\application\exception\ResourceNotFoundException.java
+C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\access-profile-service\src\main\java\com\gigu\accessprofile\application\exception\UnauthorizedActionException.java
 C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\access-profile-service\src\main\java\com\gigu\accessprofile\application\port\out\PasswordHasherPort.java
 C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\access-profile-service\src\main\java\com\gigu\accessprofile\application\port\out\ProfileRepositoryPort.java
 C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\access-profile-service\src\main\java\com\gigu\accessprofile\application\port\out\StoragePort.java

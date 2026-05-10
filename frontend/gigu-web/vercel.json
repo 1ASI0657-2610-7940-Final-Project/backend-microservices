@@ -1,0 +1,20 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/access/:path*",
+      "destination": "https://gigu-access-profile-service.onrender.com/api/v1/access/:path*"
+    },
+    {
+      "source": "/api/marketplace/:path*",
+      "destination": "https://gigu-gig-marketplace-service.onrender.com/api/v1/marketplace/:path*"
+    },
+    {
+      "source": "/api/engagement/:path*",
+      "destination": "https://gigu-pull-engagement-service.onrender.com/api/v1/engagement/:path*"
+    },
+    {
+      "source": "/api/chat/:path*",
+      "destination": "https://gigu-chat-notification-service.onrender.com/api/v1/chat/:path*"
+    }
+  ]
+}

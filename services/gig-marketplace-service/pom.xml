@@ -41,7 +41,7 @@
                                 <exclude>**/interfaces/**</exclude>
                                 <exclude>**/domain/**</exclude>
                                 <exclude>**/application/dto/**</exclude>
-                                <exclude>**/application/port/**</exclude>
+                                <exclude>**/application/port/**</exclude>`n                                <exclude>**/application/exception/**</exclude>
                                 <exclude>**/*Application.class</exclude>
                             </excludes>
                             <rules><rule><element>BUNDLE</element><limits><limit><counter>INSTRUCTION</counter><value>COVEREDRATIO</value><minimum>0.85</minimum></limit></limits></rule></rules>

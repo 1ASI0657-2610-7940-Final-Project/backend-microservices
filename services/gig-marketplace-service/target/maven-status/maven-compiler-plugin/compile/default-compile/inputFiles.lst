@@ -1,6 +1,12 @@
 C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\gig-marketplace-service\src\main\java\com\gigu\marketplace\application\dto\CreateServiceCommand.java
 C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\gig-marketplace-service\src\main\java\com\gigu\marketplace\application\dto\SearchQuery.java
 C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\gig-marketplace-service\src\main\java\com\gigu\marketplace\application\dto\UpdateServiceCommand.java
+C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\gig-marketplace-service\src\main\java\com\gigu\marketplace\application\exception\BusinessRuleViolationException.java
+C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\gig-marketplace-service\src\main\java\com\gigu\marketplace\application\exception\DuplicatedResourceException.java
+C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\gig-marketplace-service\src\main\java\com\gigu\marketplace\application\exception\ExternalServiceUnavailableException.java
+C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\gig-marketplace-service\src\main\java\com\gigu\marketplace\application\exception\InvalidStateTransitionException.java
+C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\gig-marketplace-service\src\main\java\com\gigu\marketplace\application\exception\ResourceNotFoundException.java
+C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\gig-marketplace-service\src\main\java\com\gigu\marketplace\application\exception\UnauthorizedActionException.java
 C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\gig-marketplace-service\src\main\java\com\gigu\marketplace\application\port\in\command\MarketplaceCommandUseCase.java
 C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\gig-marketplace-service\src\main\java\com\gigu\marketplace\application\port\in\query\MarketplaceQueryUseCase.java
 C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\gig-marketplace-service\src\main\java\com\gigu\marketplace\application\port\out\CategoryRepositoryPort.java

@@ -3,6 +3,12 @@ C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\chat-notification-s
 C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\chat-notification-service\src\main\java\com\gigu\chatnotification\application\dto\CreateReportCommand.java
 C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\chat-notification-service\src\main\java\com\gigu\chatnotification\application\dto\CreateTicketCommand.java
 C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\chat-notification-service\src\main\java\com\gigu\chatnotification\application\dto\SendMessageCommand.java
+C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\chat-notification-service\src\main\java\com\gigu\chatnotification\application\exception\BusinessRuleViolationException.java
+C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\chat-notification-service\src\main\java\com\gigu\chatnotification\application\exception\DuplicatedResourceException.java
+C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\chat-notification-service\src\main\java\com\gigu\chatnotification\application\exception\ExternalServiceUnavailableException.java
+C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\chat-notification-service\src\main\java\com\gigu\chatnotification\application\exception\InvalidStateTransitionException.java
+C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\chat-notification-service\src\main\java\com\gigu\chatnotification\application\exception\ResourceNotFoundException.java
+C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\chat-notification-service\src\main\java\com\gigu\chatnotification\application\exception\UnauthorizedActionException.java
 C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\chat-notification-service\src\main\java\com\gigu\chatnotification\application\port\in\ChatNotificationUseCase.java
 C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\chat-notification-service\src\main\java\com\gigu\chatnotification\application\port\out\ChatNotificationRepositoryPort.java
 C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\chat-notification-service\src\main\java\com\gigu\chatnotification\application\service\ChatNotificationApplicationService.java

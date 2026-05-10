@@ -3,8 +3,14 @@ name: chat-notification-service
 on:
   pull_request:
     branches: [ main ]
+    paths:
+      - 'services/chat-notification-service/**'
+      - '.github/workflows/chat-notification-service.yml'
   push:
     branches: [ feature/chat-notification-service ]
+    paths:
+      - 'services/chat-notification-service/**'
+      - '.github/workflows/chat-notification-service.yml'
 
 jobs:
   build-test:

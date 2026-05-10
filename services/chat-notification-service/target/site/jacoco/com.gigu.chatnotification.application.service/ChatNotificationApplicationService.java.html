@@ -18,8 +18,8 @@ public class ChatNotificationApplicationService implements ChatNotificationUseCa
     public Conversation createOrOpenConversation(CreateConversationCommand c){
 <span class="fc bfc" id="L19" title="All 2 branches covered.">        if(c.participantId()==null) throw new IllegalArgumentException(&quot;participantId required&quot;);</span>
 <span class="fc bfc" id="L20" title="All 2 branches covered.">        if(c.actorId().equals(c.participantId())) throw new IllegalArgumentException(&quot;participantId cannot be self&quot;);</span>
-<span class="pc bpc" id="L21" title="1 of 2 branches missed.">        UUID a = c.actorId().compareTo(c.participantId()) &lt; 0 ? c.actorId() : c.participantId();</span>
-<span class="pc bpc" id="L22" title="1 of 2 branches missed.">        UUID b = c.actorId().compareTo(c.participantId()) &lt; 0 ? c.participantId() : c.actorId();</span>
+<span class="fc bfc" id="L21" title="All 2 branches covered.">        UUID a = c.actorId().compareTo(c.participantId()) &lt; 0 ? c.actorId() : c.participantId();</span>
+<span class="fc bfc" id="L22" title="All 2 branches covered.">        UUID b = c.actorId().compareTo(c.participantId()) &lt; 0 ? c.participantId() : c.actorId();</span>
 <span class="fc" id="L23">        return repo.findConversation(a,b,c.projectId()).orElseGet(() -&gt; repo.saveConversation(new Conversation(UUID.randomUUID(),a,b,c.projectId(),Instant.now())));</span>
     }
 <span class="fc" id="L25">    @Transactional(readOnly = true) public List&lt;Conversation&gt; listConversations(UUID userId){ return repo.listConversations(userId); }</span>

@@ -3,6 +3,12 @@ C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\pull-engagement-ser
 C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\pull-engagement-service\src\main\java\com\gigu\engagement\application\dto\DecisionCommand.java
 C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\pull-engagement-service\src\main\java\com\gigu\engagement\application\dto\PriceSuggestionCommand.java
 C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\pull-engagement-service\src\main\java\com\gigu\engagement\application\dto\UpdateStatusCommand.java
+C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\pull-engagement-service\src\main\java\com\gigu\engagement\application\exception\BusinessRuleViolationException.java
+C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\pull-engagement-service\src\main\java\com\gigu\engagement\application\exception\DuplicatedResourceException.java
+C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\pull-engagement-service\src\main\java\com\gigu\engagement\application\exception\ExternalServiceUnavailableException.java
+C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\pull-engagement-service\src\main\java\com\gigu\engagement\application\exception\InvalidStateTransitionException.java
+C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\pull-engagement-service\src\main\java\com\gigu\engagement\application\exception\ResourceNotFoundException.java
+C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\pull-engagement-service\src\main\java\com\gigu\engagement\application\exception\UnauthorizedActionException.java
 C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\pull-engagement-service\src\main\java\com\gigu\engagement\application\port\in\EngagementUseCase.java
 C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\pull-engagement-service\src\main\java\com\gigu\engagement\application\port\out\AccessProfileClientPort.java
 C:\Users\VR\Desktop\Gigu Code\backend-microservices\services\pull-engagement-service\src\main\java\com\gigu\engagement\application\port\out\EngagementRepositoryPort.java

@@ -3,8 +3,14 @@ name: pull-engagement-service
 on:
   pull_request:
     branches: [ main ]
+    paths:
+      - 'services/pull-engagement-service/**'
+      - '.github/workflows/pull-engagement-service.yml'
   push:
     branches: [ feature/pull-engagement-service ]
+    paths:
+      - 'services/pull-engagement-service/**'
+      - '.github/workflows/pull-engagement-service.yml'
 
 jobs:
   build-test:

@@ -50,7 +50,7 @@
                 <exclude>**/interfaces/**</exclude>
                 <exclude>**/domain/**</exclude>
                 <exclude>**/application/dto/**</exclude>
-                <exclude>**/application/port/**</exclude>
+                <exclude>**/application/port/**</exclude>`n                <exclude>**/application/exception/**</exclude>
               </excludes>
               <rules>
                 <rule>

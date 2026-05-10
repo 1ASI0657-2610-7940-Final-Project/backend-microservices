@@ -3,8 +3,14 @@ name: gig-marketplace-service
 on:
   pull_request:
     branches: [ main ]
+    paths:
+      - 'services/gig-marketplace-service/**'
+      - '.github/workflows/gig-marketplace-service.yml'
   push:
     branches: [ feature/gig-marketplace-service ]
+    paths:
+      - 'services/gig-marketplace-service/**'
+      - '.github/workflows/gig-marketplace-service.yml'
 
 jobs:
   build-test:

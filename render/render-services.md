@@ -1,33 +1,33 @@
 # Render Services
 
-## access-profile-service
-
-This microservice must be deployed as an independent Render Web Service.
-
+## gigu-access-profile-service
 - Root Directory: `services/access-profile-service`
-- Runtime: Docker
-- Internal Port: `8080`
+- Build Command: `mvn clean package`
+- Start Command: `java -jar target/access-profile-service-0.0.1-SNAPSHOT.jar`
+- Environment Variables: `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD`, `JWT_SECRET`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_STORAGE_BUCKET_PORTFOLIO`
+- Health Endpoint: `/v3/api-docs`
+- Swagger URL: `/swagger-ui.html`
 
-Required environment variables:
-- `SPRING_DATASOURCE_URL`
-- `SPRING_DATASOURCE_USERNAME`
-- `SPRING_DATASOURCE_PASSWORD`
-- `JWT_SECRET`
-- `SUPABASE_URL`
-- `SUPABASE_SERVICE_ROLE_KEY`
-- `SUPABASE_STORAGE_BUCKET_PORTFOLIO`
+## gigu-gig-marketplace-service
+- Root Directory: `services/gig-marketplace-service`
+- Build Command: `mvn clean package`
+- Start Command: `java -jar target/gig-marketplace-service-0.0.1-SNAPSHOT.jar`
+- Environment Variables: `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD`, `JWT_SECRET`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_STORAGE_BUCKET_GIG_MEDIA`
+- Health Endpoint: `/v3/api-docs`
+- Swagger URL: `/swagger-ui.html`
 
-## gig-marketplace-service
-- Root Directory: services/gig-marketplace-service
-- Runtime: Docker
+## gigu-pull-engagement-service
+- Root Directory: `services/pull-engagement-service`
+- Build Command: `mvn clean package`
+- Start Command: `java -jar target/pull-engagement-service-0.0.1-SNAPSHOT.jar`
+- Environment Variables: `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD`, `JWT_SECRET`, `SERVICE_TOKEN`
+- Health Endpoint: `/v3/api-docs`
+- Swagger URL: `/swagger-ui.html`
 
-
-## pull-engagement-service
-- Root Directory: services/pull-engagement-service
-- Runtime: Docker
-
-
-## chat-notification-service
-- Root Directory: services/chat-notification-service
-- Runtime: Docker
-
+## gigu-chat-notification-service
+- Root Directory: `services/chat-notification-service`
+- Build Command: `mvn clean package`
+- Start Command: `java -jar target/chat-notification-service-0.0.1-SNAPSHOT.jar`
+- Environment Variables: `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD`, `JWT_SECRET`, `SERVICE_TOKEN`
+- Health Endpoint: `/v3/api-docs`
+- Swagger URL: `/swagger-ui.html`
