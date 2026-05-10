@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MarketplaceApplicationService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">gig-marketplace-service</a> &gt; <a href="index.source.html" class="el_package">com.gigu.marketplace.application.service</a> &gt; <span class="el_source">MarketplaceApplicationService.java</span></div><h1>MarketplaceApplicationService.java</h1><pre class="source lang-java linenums">package com.gigu.marketplace.application.service;
+import com.gigu.marketplace.application.dto.*;
+import com.gigu.marketplace.application.port.in.command.MarketplaceCommandUseCase;
+import com.gigu.marketplace.application.port.in.query.MarketplaceQueryUseCase;
+import com.gigu.marketplace.application.port.out.*;
+import com.gigu.marketplace.domain.model.*;
+import com.gigu.marketplace.domain.valueobject.ServiceStatus;
+import java.time.Instant;
+import java.util.*;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@Transactional
+public class MarketplaceApplicationService implements MarketplaceCommandUseCase, MarketplaceQueryUseCase {
+    private final ServiceOfferingRepositoryPort serviceRepo; private final CategoryRepositoryPort categoryRepo; private final MediaRepositoryPort mediaRepo; private final StoragePort storage;
+<span class="fc" id="L17">    public MarketplaceApplicationService(ServiceOfferingRepositoryPort serviceRepo, CategoryRepositoryPort categoryRepo, MediaRepositoryPort mediaRepo, StoragePort storage) { this.serviceRepo = serviceRepo; this.categoryRepo = categoryRepo; this.mediaRepo = mediaRepo; this.storage = storage; }</span>
+
+    public ServiceOffering createService(CreateServiceCommand c) {
+<span class="fc bfc" id="L20" title="All 2 branches covered.">        if (!c.freelancerRole()) throw new SecurityException(&quot;forbidden&quot;);</span>
+<span class="pc bpc" id="L21" title="1 of 4 branches missed.">        if (c.basePrice() == null || c.basePrice().doubleValue() &lt;= 0) throw new IllegalArgumentException(&quot;invalid price&quot;);</span>
+<span class="pc" id="L22">        ServiceCategory cat = categoryRepo.findCategoryById(c.categoryId()).orElseThrow(() -&gt; new IllegalArgumentException(&quot;category not found&quot;));</span>
+<span class="fc" id="L23">        return serviceRepo.save(new ServiceOffering(UUID.randomUUID(), c.freelancerId(), c.freelancerDisplayName(), c.title(), c.description(), c.basePrice(), c.currency(), c.deliveryDays(), ServiceStatus.PUBLISHED, cat.id(), cat.name(), c.tags(), Instant.now(), Instant.now()));</span>
+    }
+    public ServiceOffering updateService(UUID id, UpdateServiceCommand c) {
+<span class="pc" id="L26">        ServiceOffering s = serviceRepo.findById(id).orElseThrow(() -&gt; new IllegalArgumentException(&quot;service not found&quot;));</span>
+<span class="pc bpc" id="L27" title="1 of 4 branches missed.">        if (!&quot;FREELANCER&quot;.equals(c.actorRole()) || !s.freelancerId().toString().equals(c.actorId())) throw new SecurityException(&quot;forbidden&quot;);</span>
+<span class="pc bpc" id="L28" title="3 of 6 branches missed.">        return serviceRepo.update(new ServiceOffering(s.id(), s.freelancerId(), s.freelancerDisplayName(), s.title(), c.description() == null ? s.description() : c.description(), c.basePrice() == null ? s.basePrice() : c.basePrice(), s.currency(), c.deliveryDays() == null ? s.deliveryDays() : c.deliveryDays(), s.status(), s.categoryId(), s.categoryName(), s.tags(), s.createdAt(), Instant.now()));</span>
+    }
+    public void softDeleteService(UUID id, String actorId, String actorRole) {
+<span class="pc" id="L31">        ServiceOffering s = serviceRepo.findById(id).orElseThrow(() -&gt; new IllegalArgumentException(&quot;service not found&quot;));</span>
+<span class="pc bpc" id="L32" title="2 of 4 branches missed.">        if (!&quot;FREELANCER&quot;.equals(actorRole) || !s.freelancerId().toString().equals(actorId)) throw new SecurityException(&quot;forbidden&quot;);</span>
+<span class="fc" id="L33">        serviceRepo.update(new ServiceOffering(s.id(), s.freelancerId(), s.freelancerDisplayName(), s.title(), s.description(), s.basePrice(), s.currency(), s.deliveryDays(), ServiceStatus.UNPUBLISHED, s.categoryId(), s.categoryName(), s.tags(), s.createdAt(), Instant.now()));</span>
+<span class="fc" id="L34">    }</span>
+    public ServiceMedia uploadMedia(UUID serviceId, String actorId, String actorRole, String contentType, byte[] bytes, boolean primary) {
+<span class="pc" id="L36">        ServiceOffering s = serviceRepo.findById(serviceId).orElseThrow(() -&gt; new IllegalArgumentException(&quot;service not found&quot;));</span>
+<span class="pc bpc" id="L37" title="1 of 4 branches missed.">        if (!&quot;FREELANCER&quot;.equals(actorRole) || !s.freelancerId().toString().equals(actorId)) throw new SecurityException(&quot;forbidden&quot;);</span>
+<span class="pc bpc" id="L38" title="1 of 2 branches missed.">        if (primary) mediaRepo.clearPrimary(serviceId);</span>
+<span class="fc" id="L39">        StoragePort.Stored stored = storage.store(serviceId.toString(), contentType, bytes);</span>
+<span class="fc" id="L40">        return mediaRepo.save(new ServiceMedia(UUID.randomUUID(), serviceId, stored.publicUrl(), &quot;IMAGE&quot;, primary, stored.bucket(), stored.path(), stored.contentType(), stored.sizeBytes(), Instant.now()));</span>
+    }
+    public void deleteMedia(UUID serviceId, UUID mediaId, String actorId, String actorRole) {
+<span class="pc" id="L43">        ServiceOffering s = serviceRepo.findById(serviceId).orElseThrow(() -&gt; new IllegalArgumentException(&quot;service not found&quot;));</span>
+<span class="pc bpc" id="L44" title="2 of 4 branches missed.">        if (!&quot;FREELANCER&quot;.equals(actorRole) || !s.freelancerId().toString().equals(actorId)) throw new SecurityException(&quot;forbidden&quot;);</span>
+<span class="pc" id="L45">        mediaRepo.findMediaById(mediaId).orElseThrow(() -&gt; new IllegalArgumentException(&quot;media not found&quot;));</span>
+<span class="fc" id="L46">        mediaRepo.delete(mediaId);</span>
+<span class="fc" id="L47">    }</span>
+<span class="fc" id="L48">    @Transactional(readOnly = true) public PagedResult search(SearchQuery q){ var r=serviceRepo.searchPublished(q); return new PagedResult(r.items(), r.total(), q.page(), q.pageSize());}</span>
+<span class="pc" id="L49">    @Transactional(readOnly = true) public ServiceOffering detail(UUID serviceId){ return serviceRepo.findById(serviceId).orElseThrow(() -&gt; new IllegalArgumentException(&quot;service not found&quot;)); }</span>
+<span class="fc" id="L50">    @Transactional(readOnly = true) public List&lt;ServiceOffering&gt; mine(UUID freelancerId){ return serviceRepo.findByFreelancerId(freelancerId); }</span>
+<span class="fc" id="L51">    @Transactional(readOnly = true) public List&lt;ServiceCategory&gt; categories(){ return categoryRepo.findAll(); }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

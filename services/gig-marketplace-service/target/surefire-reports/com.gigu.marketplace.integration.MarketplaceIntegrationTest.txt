@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.gigu.marketplace.integration.MarketplaceIntegrationTest
+-------------------------------------------------------------------------------
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 2, Time elapsed: 0.001 s -- in com.gigu.marketplace.integration.MarketplaceIntegrationTest

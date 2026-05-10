@@ -16,3 +16,8 @@ Required environment variables:
 - `SUPABASE_URL`
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `SUPABASE_STORAGE_BUCKET_PORTFOLIO`
+
+## gig-marketplace-service
+- Root Directory: services/gig-marketplace-service
+- Runtime: Docker
+
