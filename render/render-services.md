@@ -21,3 +21,8 @@ Required environment variables:
 - Root Directory: services/gig-marketplace-service
 - Runtime: Docker
 
+
+## pull-engagement-service
+- Root Directory: services/pull-engagement-service
+- Runtime: Docker
+
