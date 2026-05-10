@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ChatNotificationApplicationService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">chat-notification-service</a> &gt; <a href="index.source.html" class="el_package">com.gigu.chatnotification.application.service</a> &gt; <span class="el_source">ChatNotificationApplicationService.java</span></div><h1>ChatNotificationApplicationService.java</h1><pre class="source lang-java linenums">package com.gigu.chatnotification.application.service;
+
+import com.gigu.chatnotification.application.dto.*;
+import com.gigu.chatnotification.application.port.in.ChatNotificationUseCase;
+import com.gigu.chatnotification.application.port.out.ChatNotificationRepositoryPort;
+import com.gigu.chatnotification.domain.model.*;
+import java.time.Instant;
+import java.util.*;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@Transactional
+public class ChatNotificationApplicationService implements ChatNotificationUseCase {
+    private final ChatNotificationRepositoryPort repo;
+<span class="fc" id="L16">    public ChatNotificationApplicationService(ChatNotificationRepositoryPort repo){ this.repo=repo; }</span>
+
+    public Conversation createOrOpenConversation(CreateConversationCommand c){
+<span class="fc bfc" id="L19" title="All 2 branches covered.">        if(c.participantId()==null) throw new IllegalArgumentException(&quot;participantId required&quot;);</span>
+<span class="fc bfc" id="L20" title="All 2 branches covered.">        if(c.actorId().equals(c.participantId())) throw new IllegalArgumentException(&quot;participantId cannot be self&quot;);</span>
+<span class="pc bpc" id="L21" title="1 of 2 branches missed.">        UUID a = c.actorId().compareTo(c.participantId()) &lt; 0 ? c.actorId() : c.participantId();</span>
+<span class="pc bpc" id="L22" title="1 of 2 branches missed.">        UUID b = c.actorId().compareTo(c.participantId()) &lt; 0 ? c.participantId() : c.actorId();</span>
+<span class="fc" id="L23">        return repo.findConversation(a,b,c.projectId()).orElseGet(() -&gt; repo.saveConversation(new Conversation(UUID.randomUUID(),a,b,c.projectId(),Instant.now())));</span>
+    }
+<span class="fc" id="L25">    @Transactional(readOnly = true) public List&lt;Conversation&gt; listConversations(UUID userId){ return repo.listConversations(userId); }</span>
+<span class="fc bfc" id="L26" title="All 2 branches covered.">    @Transactional(readOnly = true) public Conversation getConversation(UUID id, UUID userId){ var c=repo.getConversation(id).orElseThrow(() -&gt; new IllegalArgumentException(&quot;conversation not found&quot;)); if(!repo.isParticipant(id,userId)) throw new SecurityException(&quot;forbidden&quot;); return c; }</span>
+<span class="fc bfc" id="L27" title="All 2 branches covered.">    @Transactional(readOnly = true) public PagedMessages listMessages(UUID cid, UUID uid, int page, int pageSize){ if(!repo.isParticipant(cid,uid)) throw new SecurityException(&quot;forbidden&quot;); var p=repo.listMessages(cid,page,pageSize); return new PagedMessages(p.data(),page,pageSize,p.total()); }</span>
+<span class="pc bpc" id="L28" title="2 of 10 branches missed.">    public Message sendMessage(UUID cid, SendMessageCommand c){ if(!repo.isParticipant(cid,c.actorId())) throw new SecurityException(&quot;forbidden&quot;); if(c.content()==null || c.content().isBlank()) throw new IllegalArgumentException(&quot;content required&quot;); if(c.content().length()&gt;2000) throw new IllegalArgumentException(&quot;content too long&quot;); var m=repo.saveMessage(new Message(UUID.randomUUID(),cid,c.actorId(),c.content(),Instant.now())); var conv=repo.getConversation(cid).orElseThrow(); UUID other=conv.participantA().equals(c.actorId())?conv.participantB():conv.participantA(); repo.saveNotification(new Notification(UUID.randomUUID(),other,&quot;NEW_MESSAGE&quot;,&quot;Nuevo mensaje&quot;,c.content(),&quot;CONVERSATION&quot;,cid,false,Instant.now(),null)); return m; }</span>
+<span class="fc" id="L29">    @Transactional(readOnly = true) public PagedNotifications listNotifications(UUID userId, Boolean unreadOnly, int page, int pageSize){ var p=repo.listNotifications(userId,unreadOnly,page,pageSize); return new PagedNotifications(p.data(),page,pageSize,p.total()); }</span>
+<span class="fc bfc" id="L30" title="All 2 branches covered.">    public Notification markRead(UUID nid, UUID uid){ var n=repo.getNotification(nid).orElseThrow(() -&gt; new IllegalArgumentException(&quot;notification not found&quot;)); if(!n.recipientId().equals(uid)) throw new SecurityException(&quot;forbidden&quot;); return repo.updateNotification(new Notification(n.id(),n.recipientId(),n.type(),n.title(),n.message(),n.resourceType(),n.resourceId(),true,n.createdAt(),Instant.now())); }</span>
+<span class="fc" id="L31">    public int markAllRead(UUID uid){ return repo.markAllRead(uid); }</span>
+<span class="fc bfc" id="L32" title="All 2 branches covered.">    public UserReport createReport(CreateReportCommand c){ if(c.reporterId().equals(c.reportedUserId())) throw new IllegalArgumentException(&quot;self report not allowed&quot;); return repo.saveReport(new UserReport(UUID.randomUUID(),c.reporterId(),c.reportedUserId(),c.reason(),c.description(),&quot;OPEN&quot;,Instant.now())); }</span>
+<span class="pc bpc" id="L33" title="3 of 8 branches missed.">    public SupportTicket createSupportTicket(CreateTicketCommand c){ if(c.subject()==null || c.subject().isBlank() || c.description()==null || c.description().isBlank()) throw new IllegalArgumentException(&quot;subject and description required&quot;); return repo.saveTicket(new SupportTicket(UUID.randomUUID(),c.userId(),c.subject(),c.description(),&quot;OPEN&quot;,Instant.now())); }</span>
+<span class="fc" id="L34">    public Notification createInternalNotification(CreateInternalNotificationCommand c){ return repo.saveNotification(new Notification(UUID.randomUUID(),c.recipientId(),c.type(),c.title(),c.message(),c.resourceType(),c.resourceId(),false,Instant.now(),null)); }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

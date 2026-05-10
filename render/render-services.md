@@ -26,3 +26,8 @@ Required environment variables:
 - Root Directory: services/pull-engagement-service
 - Runtime: Docker
 
+
+## chat-notification-service
+- Root Directory: services/chat-notification-service
+- Runtime: Docker
+

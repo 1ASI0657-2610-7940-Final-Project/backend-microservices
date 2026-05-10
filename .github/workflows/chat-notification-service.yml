@@ -1,0 +1,22 @@
+name: chat-notification-service
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ feature/chat-notification-service ]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/chat-notification-service
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - run: mvn clean verify
