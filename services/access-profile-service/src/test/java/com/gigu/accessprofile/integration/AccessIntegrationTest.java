@@ -51,6 +51,17 @@ class AccessIntegrationTest {
     void signUpRejectsDuplicateEmail() throws Exception {
         var body = Map.of("firstName","Ana","lastName","Rojas","email","dup@upc.edu.pe","password","Password123!","role","CLIENT");
         mockMvc.perform(post("/api/v1/access/sign-up").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(body))).andExpect(status().isCreated());
-        mockMvc.perform(post("/api/v1/access/sign-up").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(body))).andExpect(status().isBadRequest());
+        mockMvc.perform(post("/api/v1/access/sign-up").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(body))).andExpect(status().isConflict()).andExpect(jsonPath("$.error").value("EMAIL_ALREADY_EXISTS"));
+    }
+
+    @Test
+    void signUpClientSucceeds() throws Exception {
+        var signUp = Map.of("firstName","Carla","lastName","Vega","email","carla.vega@upc.edu.pe","password","Password123!","role","CLIENT");
+        mockMvc.perform(post("/api/v1/access/sign-up").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(signUp))).andExpect(status().isCreated());
+    }
+
+    @Test
+    void actuatorHealthIsPublic() throws Exception {
+        mockMvc.perform(get("/actuator/health")).andExpect(status().isOk());
     }
 }

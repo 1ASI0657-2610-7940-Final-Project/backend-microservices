@@ -1,6 +1,7 @@
 package com.gigu.accessprofile.application.service;
 
 import com.gigu.accessprofile.application.dto.*;
+import com.gigu.accessprofile.application.exception.DuplicatedResourceException;
 import com.gigu.accessprofile.application.port.out.*;
 import com.gigu.accessprofile.domain.model.User;
 import com.gigu.accessprofile.domain.model.FreelancerProfile;
@@ -37,7 +38,7 @@ class AccessProfileApplicationServiceTest {
     @Test
     void signUpRejectsDuplicateEmail() {
         when(userRepository.existsByEmail("ana@test.com")).thenReturn(true);
-        assertThrows(IllegalArgumentException.class, () -> service.signUp(new SignUpCommand("Ana", "Rojas", "ana@test.com", "x", RoleName.CLIENT)));
+        assertThrows(DuplicatedResourceException.class, () -> service.signUp(new SignUpCommand("Ana", "Rojas", "ana@test.com", "x", RoleName.CLIENT)));
     }
 
     @Test
@@ -57,7 +58,7 @@ class AccessProfileApplicationServiceTest {
 
     @Test
     void portfolioUploadValidatesFreelancerRole() {
-        assertThrows(SecurityException.class, () -> service.addMyPortfolioItem(UUID.randomUUID(), Set.of(RoleName.CLIENT), new UploadPortfolioCommand("t", "d", "image/png", 1, new byte[]{1})));
+        assertThrows(SecurityException.class, () -> service.addMyPortfolioItem(UUID.randomUUID(), Set.of(RoleName.CLIENT), new UploadPortfolioCommand("t", "d", "image/png", "a.png", 1, new byte[]{1})));
     }
 
     @Test
@@ -97,10 +98,10 @@ class AccessProfileApplicationServiceTest {
     @Test
     void addPortfolioAsFreelancer() {
         UUID userId = UUID.randomUUID();
-        when(storagePort.store(eq(userId.toString()), any(), any())).thenReturn(new StoragePort.StoredFile("portfolio", "p", "url", "image/png", 10));
+        when(storagePort.store(eq(userId.toString()), any(), any(), any())).thenReturn(new StoragePort.StoredFile("portfolio", "p", "url", "image/png", 10));
         when(profileRepository.addPortfolioItem(eq(userId), any(), any(), any(), any(), any(), any(), anyLong()))
                 .thenReturn(new PortfolioItem(UUID.randomUUID(), UUID.randomUUID(), "t", "d", "portfolio", "p", "url", "image/png", 10, Instant.now()));
-        assertEquals("t", service.addMyPortfolioItem(userId, Set.of(RoleName.FREELANCER), new UploadPortfolioCommand("t", "d", "image/png", 10, new byte[]{1})).title());
+        assertEquals("t", service.addMyPortfolioItem(userId, Set.of(RoleName.FREELANCER), new UploadPortfolioCommand("t", "d", "image/png", "a.png", 10, new byte[]{1})).title());
     }
 
     @Test

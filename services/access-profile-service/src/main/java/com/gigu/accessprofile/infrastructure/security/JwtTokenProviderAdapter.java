@@ -21,6 +21,7 @@ public class JwtTokenProviderAdapter implements TokenProviderPort {
     public String generate(User user) {
         Instant now = Instant.now();
         return Jwts.builder().subject(user.id().toString()).issuedAt(Date.from(now)).expiration(Date.from(now.plusSeconds(3600)))
+                .claim("email", user.email())
                 .claim("roles", user.roles().stream().map(Enum::name).collect(Collectors.toList()))
                 .signWith(Keys.hmacShaKeyFor(secret)).compact();
     }

@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.validation.FieldError;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -49,7 +50,16 @@ public class RestExceptionHandler {
     ResponseEntity<ErrorResponse> unauthorized(AuthenticationCredentialsNotFoundException e, HttpServletRequest request) { return build(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", "Unauthorized", request, Map.of()); }
 
     @ExceptionHandler({BusinessRuleViolationException.class, IllegalArgumentException.class})
-    ResponseEntity<ErrorResponse> badRequest(RuntimeException e, HttpServletRequest request) { return build(HttpStatus.BAD_REQUEST, "BAD_REQUEST", e.getMessage(), request, Map.of()); }
+    ResponseEntity<ErrorResponse> badRequest(RuntimeException e, HttpServletRequest request) {
+        String code = "BAD_REQUEST";
+        if (e.getMessage() != null && e.getMessage().toLowerCase().contains("invalid role")) code = "VALIDATION_ERROR";
+        return build(HttpStatus.BAD_REQUEST, code, e.getMessage(), request, Map.of());
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    ResponseEntity<ErrorResponse> unreadable(HttpMessageNotReadableException e, HttpServletRequest request) {
+        return build(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR", "Request body is invalid.", request, Map.of());
+    }
 
     @ExceptionHandler(Exception.class)
     ResponseEntity<ErrorResponse> internal(Exception e, HttpServletRequest request) {

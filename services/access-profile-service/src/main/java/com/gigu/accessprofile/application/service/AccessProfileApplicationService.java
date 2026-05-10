@@ -1,6 +1,7 @@
 package com.gigu.accessprofile.application.service;
 
 import com.gigu.accessprofile.application.dto.*;
+import com.gigu.accessprofile.application.exception.DuplicatedResourceException;
 import com.gigu.accessprofile.application.port.out.*;
 import com.gigu.accessprofile.domain.model.FreelancerProfile;
 import com.gigu.accessprofile.domain.model.PortfolioItem;
@@ -31,7 +32,7 @@ public class AccessProfileApplicationService {
     }
 
     public User signUp(SignUpCommand command) {
-        if (userRepository.existsByEmail(command.email())) throw new IllegalArgumentException("email already exists");
+        if (userRepository.existsByEmail(command.email())) throw new DuplicatedResourceException("email already exists");
         if (command.role() == RoleName.ADMIN) throw new IllegalArgumentException("invalid role");
         User user = new User(UUID.randomUUID(), command.firstName(), command.lastName(), command.email().toLowerCase(), passwordHasher.hash(command.password()), Set.of(command.role()), Instant.now());
         User saved = userRepository.save(user);
@@ -58,7 +59,7 @@ public class AccessProfileApplicationService {
 
     public PortfolioItem addMyPortfolioItem(UUID userId, Set<RoleName> roles, UploadPortfolioCommand command) {
         if (!roles.contains(RoleName.FREELANCER)) throw new SecurityException("forbidden");
-        StoragePort.StoredFile file = storagePort.store(userId.toString(), command.contentType(), command.bytes());
+        StoragePort.StoredFile file = storagePort.store(userId.toString(), command.contentType(), command.originalFileName(), command.bytes());
         return profileRepository.addPortfolioItem(userId, command.title(), command.description(), file.bucket(), file.path(), file.publicUrl(), file.contentType(), file.sizeBytes());
     }
 

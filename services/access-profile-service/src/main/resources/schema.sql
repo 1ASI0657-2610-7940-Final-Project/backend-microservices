@@ -1,1 +1,1 @@
-CREATE SCHEMA IF NOT EXISTS access_profile_schema;
+create schema if not exists access_profile_schema;

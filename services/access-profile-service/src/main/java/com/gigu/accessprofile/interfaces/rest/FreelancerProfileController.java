@@ -40,8 +40,12 @@ public class FreelancerProfileController {
     @PostMapping(value = "/me/portfolio-items", consumes = "multipart/form-data")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<Map<String, Object>> addPortfolio(Authentication authentication, @RequestParam String title, @RequestParam String description, @RequestParam("file") MultipartFile file) throws Exception {
+        if (file.isEmpty()) throw new IllegalArgumentException("file is empty");
+        if (!"image/png".equalsIgnoreCase(file.getContentType()) && !"image/jpeg".equalsIgnoreCase(file.getContentType())) {
+            throw new IllegalArgumentException("unsupported content type");
+        }
         User user = (User) authentication.getPrincipal();
-        var item = service.addMyPortfolioItem(user.id(), user.roles(), new UploadPortfolioCommand(title, description, file.getContentType(), file.getSize(), file.getBytes()));
+        var item = service.addMyPortfolioItem(user.id(), user.roles(), new UploadPortfolioCommand(title, description, file.getContentType(), file.getOriginalFilename(), file.getSize(), file.getBytes()));
         return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("id", item.id(), "title", item.title(), "description", item.description(), "mediaUrl", item.publicUrl(), "createdAt", DateTimeFormatter.ISO_INSTANT.format(item.createdAt())));
     }
 
