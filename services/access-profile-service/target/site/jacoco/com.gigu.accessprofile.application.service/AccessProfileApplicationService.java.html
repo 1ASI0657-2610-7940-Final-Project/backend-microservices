@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AccessProfileApplicationService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">access-profile-service</a> &gt; <a href="index.source.html" class="el_package">com.gigu.accessprofile.application.service</a> &gt; <span class="el_source">AccessProfileApplicationService.java</span></div><h1>AccessProfileApplicationService.java</h1><pre class="source lang-java linenums">package com.gigu.accessprofile.application.service;
+
+import com.gigu.accessprofile.application.dto.*;
+import com.gigu.accessprofile.application.port.out.*;
+import com.gigu.accessprofile.domain.model.FreelancerProfile;
+import com.gigu.accessprofile.domain.model.PortfolioItem;
+import com.gigu.accessprofile.domain.model.User;
+import com.gigu.accessprofile.domain.valueobject.RoleName;
+import java.time.Instant;
+import java.util.Set;
+import java.util.UUID;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@Transactional
+public class AccessProfileApplicationService {
+<span class="fc" id="L18">    public record LoginResult(String token, User user) {}</span>
+    private final UserRepositoryPort userRepository;
+    private final ProfileRepositoryPort profileRepository;
+    private final PasswordHasherPort passwordHasher;
+    private final TokenProviderPort tokenProvider;
+    private final StoragePort storagePort;
+
+<span class="fc" id="L25">    public AccessProfileApplicationService(UserRepositoryPort userRepository, ProfileRepositoryPort profileRepository, PasswordHasherPort passwordHasher, TokenProviderPort tokenProvider, StoragePort storagePort) {</span>
+<span class="fc" id="L26">        this.userRepository = userRepository;</span>
+<span class="fc" id="L27">        this.profileRepository = profileRepository;</span>
+<span class="fc" id="L28">        this.passwordHasher = passwordHasher;</span>
+<span class="fc" id="L29">        this.tokenProvider = tokenProvider;</span>
+<span class="fc" id="L30">        this.storagePort = storagePort;</span>
+<span class="fc" id="L31">    }</span>
+
+    public User signUp(SignUpCommand command) {
+<span class="fc bfc" id="L34" title="All 2 branches covered.">        if (userRepository.existsByEmail(command.email())) throw new IllegalArgumentException(&quot;email already exists&quot;);</span>
+<span class="pc bpc" id="L35" title="1 of 2 branches missed.">        if (command.role() == RoleName.ADMIN) throw new IllegalArgumentException(&quot;invalid role&quot;);</span>
+<span class="fc" id="L36">        User user = new User(UUID.randomUUID(), command.firstName(), command.lastName(), command.email().toLowerCase(), passwordHasher.hash(command.password()), Set.of(command.role()), Instant.now());</span>
+<span class="fc" id="L37">        User saved = userRepository.save(user);</span>
+<span class="pc bpc" id="L38" title="1 of 2 branches missed.">        if (command.role() == RoleName.FREELANCER) profileRepository.createEmpty(saved.id(), saved.firstName() + &quot; &quot; + saved.lastName());</span>
+<span class="fc" id="L39">        return saved;</span>
+    }
+
+    public LoginResult login(LoginCommand command) {
+<span class="fc" id="L43">        User user = userRepository.findByEmail(command.email().toLowerCase()).orElseThrow(() -&gt; new IllegalArgumentException(&quot;invalid credentials&quot;));</span>
+<span class="pc bpc" id="L44" title="1 of 2 branches missed.">        if (!passwordHasher.matches(command.password(), user.passwordHash())) throw new IllegalArgumentException(&quot;invalid credentials&quot;);</span>
+<span class="fc" id="L45">        return new LoginResult(tokenProvider.generate(user), user);</span>
+    }
+
+    @Transactional(readOnly = true)
+<span class="pc" id="L49">    public User me(UUID userId) { return userRepository.findById(userId).orElseThrow(() -&gt; new IllegalArgumentException(&quot;user not found&quot;)); }</span>
+
+    @Transactional(readOnly = true)
+<span class="pc" id="L52">    public FreelancerProfile publicFreelancerProfile(UUID userId) { return profileRepository.findByUserId(userId).orElseThrow(() -&gt; new IllegalArgumentException(&quot;profile not found&quot;)); }</span>
+
+    public FreelancerProfile updateMyFreelancerProfile(UUID userId, Set&lt;RoleName&gt; roles, UpdateProfileCommand command) {
+<span class="fc bfc" id="L55" title="All 2 branches covered.">        if (!roles.contains(RoleName.FREELANCER)) throw new SecurityException(&quot;forbidden&quot;);</span>
+<span class="fc" id="L56">        return profileRepository.update(userId, command.bio(), command.skills());</span>
+    }
+
+    public PortfolioItem addMyPortfolioItem(UUID userId, Set&lt;RoleName&gt; roles, UploadPortfolioCommand command) {
+<span class="fc bfc" id="L60" title="All 2 branches covered.">        if (!roles.contains(RoleName.FREELANCER)) throw new SecurityException(&quot;forbidden&quot;);</span>
+<span class="fc" id="L61">        StoragePort.StoredFile file = storagePort.store(userId.toString(), command.contentType(), command.bytes());</span>
+<span class="fc" id="L62">        return profileRepository.addPortfolioItem(userId, command.title(), command.description(), file.bucket(), file.path(), file.publicUrl(), file.contentType(), file.sizeBytes());</span>
+    }
+
+    public void deleteMyPortfolioItem(UUID userId, Set&lt;RoleName&gt; roles, UUID itemId) {
+<span class="fc bfc" id="L66" title="All 2 branches covered.">        if (!roles.contains(RoleName.FREELANCER)) throw new SecurityException(&quot;forbidden&quot;);</span>
+<span class="fc" id="L67">        profileRepository.deletePortfolioItem(userId, itemId);</span>
+<span class="fc" id="L68">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,3 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+access-profile-service,com.gigu.accessprofile.application.service,AccessProfileApplicationService.LoginResult,0,9,0,0,0,1,0,1,0,1
+access-profile-service,com.gigu.accessprofile.application.service,AccessProfileApplicationService,20,195,3,11,0,26,5,13,2,9
