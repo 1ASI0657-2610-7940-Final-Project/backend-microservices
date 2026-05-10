@@ -24,4 +24,20 @@ class ChatNotificationIntegrationTest {
         mvc.perform(post("/api/v1/chat/internal/notifications").contentType("application/json").content("{\"recipientId\":\"11111111-1111-1111-1111-111111111111\",\"type\":\"T\",\"title\":\"t\",\"message\":\"m\"}"))
                 .andExpect(status().isForbidden());
     }
+
+    @Test void actuatorHealthIsPublic() throws Exception {
+        mvc.perform(get("/actuator/health")).andExpect(status().isOk());
+    }
+
+    @Test void normalChatEndpointRequiresJwt() throws Exception {
+        mvc.perform(get("/api/v1/chat/conversations")).andExpect(status().isForbidden());
+    }
+
+    @Test void internalNotificationAcceptsServiceToken() throws Exception {
+        mvc.perform(post("/api/v1/chat/internal/notifications")
+                .header("X-Service-Token", "svc-token")
+                .contentType("application/json")
+                .content("{\"recipientId\":\"11111111-1111-1111-1111-111111111111\",\"type\":\"T\",\"title\":\"t\",\"message\":\"m\"}"))
+                .andExpect(status().isCreated());
+    }
 }
