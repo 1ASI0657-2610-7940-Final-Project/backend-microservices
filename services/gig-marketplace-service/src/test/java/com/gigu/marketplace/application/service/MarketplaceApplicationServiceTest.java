@@ -47,7 +47,7 @@ class MarketplaceApplicationServiceTest {
     @Test void mediaUploadValidatesOwner(){
         UUID sid=UUID.randomUUID(); UUID owner=UUID.randomUUID();
         when(serviceRepo.findById(sid)).thenReturn(Optional.of(new ServiceOffering(sid,owner,"Ana","t","d",BigDecimal.TEN,CurrencyCode.PEN,7,ServiceStatus.PUBLISHED,UUID.randomUUID(),"Design",List.of(),Instant.now(),Instant.now())));
-        assertThrows(SecurityException.class, () -> app.uploadMedia(sid,UUID.randomUUID().toString(),"FREELANCER","image/png",new byte[]{1},true));
+        assertThrows(SecurityException.class, () -> app.uploadMedia(sid,UUID.randomUUID().toString(),"FREELANCER","image/png","x.png",new byte[]{1},true));
     }
 
     @Test void createGigSuccess() {
@@ -72,9 +72,9 @@ class MarketplaceApplicationServiceTest {
         UUID sid=UUID.randomUUID(); UUID owner=UUID.randomUUID(); UUID cat=UUID.randomUUID();
         var s = new ServiceOffering(sid,owner,"Ana","t","d",BigDecimal.TEN,CurrencyCode.PEN,7,ServiceStatus.PUBLISHED,cat,"Design",List.of(),Instant.now(),Instant.now());
         when(serviceRepo.findById(sid)).thenReturn(Optional.of(s));
-        when(storage.store(any(), any(), any())).thenReturn(new StoragePort.Stored("gig-media","services/x/y","https://x","image/png",10));
+        when(storage.store(any(), any(), any(), any())).thenReturn(new StoragePort.Stored("gig-media","services/x/y","https://x","image/png",10));
         when(mediaRepo.save(any())).thenAnswer(i -> i.getArgument(0));
-        var media = app.uploadMedia(sid,owner.toString(),"FREELANCER","image/png",new byte[]{1},true);
+        var media = app.uploadMedia(sid,owner.toString(),"FREELANCER","image/png","x.png",new byte[]{1},true);
         assertTrue(media.primary());
         verify(mediaRepo).clearPrimary(sid);
     }

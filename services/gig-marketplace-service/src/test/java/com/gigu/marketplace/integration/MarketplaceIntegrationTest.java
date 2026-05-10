@@ -32,4 +32,13 @@ class MarketplaceIntegrationTest {
     @Test void searchFiltersByCategoryAndPrice() throws Exception {
         mvc.perform(get("/api/v1/marketplace/services").param("category","Design").param("priceMin","1").param("priceMax","500")).andExpect(status().isOk()).andExpect(jsonPath("$.data").exists());
     }
+
+    @Test void protectedCreateRequiresJwt() throws Exception {
+        var body = Map.of("title","Logo","description","Desc","basePrice",100,"currency","USD","categoryId","11111111-1111-1111-1111-111111111111","deliveryDays",2,"tags",new String[]{"logo"});
+        mvc.perform(post("/api/v1/marketplace/services").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(body))).andExpect(status().isForbidden());
+    }
+
+    @Test void actuatorHealthIsPublic() throws Exception {
+        mvc.perform(get("/actuator/health")).andExpect(status().isOk());
+    }
 }
