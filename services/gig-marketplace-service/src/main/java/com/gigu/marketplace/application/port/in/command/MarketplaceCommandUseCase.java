@@ -8,6 +8,6 @@ public interface MarketplaceCommandUseCase {
     ServiceOffering createService(CreateServiceCommand command);
     ServiceOffering updateService(UUID serviceId, UpdateServiceCommand command);
     void softDeleteService(UUID serviceId, String actorId, String actorRole);
-    ServiceMedia uploadMedia(UUID serviceId, String actorId, String actorRole, String contentType, byte[] bytes, boolean primary);
+    ServiceMedia uploadMedia(UUID serviceId, String actorId, String actorRole, String contentType, String originalFileName, byte[] bytes, boolean primary);
     void deleteMedia(UUID serviceId, UUID mediaId, String actorId, String actorRole);
 }

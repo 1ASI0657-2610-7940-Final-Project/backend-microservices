@@ -32,11 +32,11 @@ public class MarketplaceApplicationService implements MarketplaceCommandUseCase,
         if (!"FREELANCER".equals(actorRole) || !s.freelancerId().toString().equals(actorId)) throw new SecurityException("forbidden");
         serviceRepo.update(new ServiceOffering(s.id(), s.freelancerId(), s.freelancerDisplayName(), s.title(), s.description(), s.basePrice(), s.currency(), s.deliveryDays(), ServiceStatus.UNPUBLISHED, s.categoryId(), s.categoryName(), s.tags(), s.createdAt(), Instant.now()));
     }
-    public ServiceMedia uploadMedia(UUID serviceId, String actorId, String actorRole, String contentType, byte[] bytes, boolean primary) {
+    public ServiceMedia uploadMedia(UUID serviceId, String actorId, String actorRole, String contentType, String originalFileName, byte[] bytes, boolean primary) {
         ServiceOffering s = serviceRepo.findById(serviceId).orElseThrow(() -> new IllegalArgumentException("service not found"));
         if (!"FREELANCER".equals(actorRole) || !s.freelancerId().toString().equals(actorId)) throw new SecurityException("forbidden");
         if (primary) mediaRepo.clearPrimary(serviceId);
-        StoragePort.Stored stored = storage.store(serviceId.toString(), contentType, bytes);
+        StoragePort.Stored stored = storage.store(serviceId.toString(), contentType, originalFileName, bytes);
         return mediaRepo.save(new ServiceMedia(UUID.randomUUID(), serviceId, stored.publicUrl(), "IMAGE", primary, stored.bucket(), stored.path(), stored.contentType(), stored.sizeBytes(), Instant.now()));
     }
     public void deleteMedia(UUID serviceId, UUID mediaId, String actorId, String actorRole) {
