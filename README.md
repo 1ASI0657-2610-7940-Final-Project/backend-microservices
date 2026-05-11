@@ -12,7 +12,7 @@
 ## Services
 - `services/access-profile-service`
 - `services/gig-marketplace-service`
-- `services/pull-engagement-service`
+- `services/pulls-service`
 - `services/chat-notification-service`
 
 ## GitFlow Branches
@@ -20,14 +20,38 @@
 - `feature/gig-marketplace-service`
 - `feature/pull-engagement-service`
 - `feature/chat-notification-service`
-- `feature/error-handling-swagger-ci`
+- `feature/main-app-logic`
+
+Deploy note:
+- Render must deploy all 4 services from `feature/main-app-logic`.
+- Service separation in Render is done only by `Root Directory`.
+- Feature branches above are internal development branches, not deploy branches.
+
+## Local Run
+Required profile: `local`
+
+```powershell
+cd "C:\Users\VR\Desktop\Gigu Code\backend-microservices"
+powershell -ExecutionPolicy Bypass -File .\scripts\run-local-all.ps1
+```
+
+Smoke test:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\smoke-test-local.ps1
+```
+
+Note: Spring Boot Dashboard can fail if it launches with default profile; use the `local` launch configurations or the script above.
 
 ## Swagger URLs
-- Access: `/swagger-ui.html`
-- Marketplace: `/swagger-ui.html`
-- Engagement: `/swagger-ui.html`
-- Chat: `/swagger-ui.html`
-- OpenAPI docs: `/v3/api-docs`
+- Access: `http://localhost:8081/swagger-ui.html`
+- Marketplace: `http://localhost:8082/swagger-ui.html`
+- Pulls: `http://localhost:8083/swagger-ui.html`
+- Chat: `http://localhost:8084/swagger-ui.html`
+
+Pulls service compatibility note:
+- Service name/folder: `pulls-service`
+- API base path remains: `/api/v1/engagement/**`
 
 ## Render Notes
 See `render/render-services.md` for root directories, env vars, build/start commands, health endpoint, and Swagger endpoints.
