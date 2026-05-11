@@ -1,5 +1,5 @@
 server:
-  port: 8083
+  port: ${PORT:8080}
 
 spring:
   datasource:
@@ -20,17 +20,24 @@ spring:
     defer-datasource-initialization: false
     properties:
       hibernate:
-        default_schema: engagement_schema
+        default_schema: marketplace_schema
         dialect: org.hibernate.dialect.PostgreSQLDialect
     open-in-view: false
 
 app:
   jwt:
     secret: ${JWT_SECRET}
-  services:
-    access-profile-url: ${ACCESS_PROFILE_SERVICE_URL}
-    marketplace-url: ${GIG_MARKETPLACE_SERVICE_URL}
-    chat-notification-url: ${CHAT_NOTIFICATION_SERVICE_URL}
-    internal-service-token: ${INTERNAL_SERVICE_TOKEN}
+  supabase:
+    url: ${SUPABASE_URL}
+    service-role-key: ${SUPABASE_SERVICE_ROLE_KEY}
+    storage:
+      gig-media-bucket: ${SUPABASE_STORAGE_BUCKET_GIG_MEDIA}
 
-SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never

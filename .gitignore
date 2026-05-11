@@ -5,3 +5,5 @@ target/
 **/target/
 logs/
 _local-render-config/
+
+_local-gcloud-config/

@@ -1,65 +1,35 @@
-# backend-microservices
+# Backend Microservices
 
-## Architecture
-- Frontend: Vue + Vite on Vercel
-- Gateway: Vercel rewrites (`frontend/gigu-web/vercel.json`)
-- Backend: Spring Boot microservices on Render
-- Database: Supabase PostgreSQL
-- Storage: Supabase Storage (`portfolio`, `gig-media`)
-- CI: GitHub Actions per service
-- Messaging: No RabbitMQ in initial stage
+## Stack
+- Java 21
+- Spring Boot 3.3
+- Maven
+- PostgreSQL (Supabase)
+- Google Cloud Run
 
-## Services
-- `services/access-profile-service`
-- `services/gig-marketplace-service`
-- `services/pulls-service`
-- `services/chat-notification-service`
+## Microservices
+- Access Profile: `services/access-profile-service`
+- Gig Marketplace: `services/gig-marketplace-service`
+- Pulls: `services/pulls-service`
+- Chat Notification: `services/chat-notification-service`
 
-## GitFlow Branches
-- `feature/access-profile-service`
-- `feature/gig-marketplace-service`
-- `feature/pull-engagement-service`
-- `feature/chat-notification-service`
-- `feature/main-app-logic`
+## Cloud Run Services
+- `gigu-access-profile-service`: `https://gigu-access-profile-service-oawg43e6ea-uc.a.run.app`
+- `gigu-gig-marketplace-service`: `https://gigu-gig-marketplace-service-oawg43e6ea-uc.a.run.app`
+- `gigu-pulls-service`: `https://gigu-pulls-service-149855215912.us-central1.run.app`
+- `gigu-chat-notification-service`: `https://gigu-chat-notification-service-oawg43e6ea-uc.a.run.app`
 
-Deploy note:
-- Render must deploy all 4 services from `feature/main-app-logic`.
-- Service separation in Render is done only by `Root Directory`.
-- Feature branches above are internal development branches, not deploy branches.
+## Swagger
+- Access: `https://gigu-access-profile-service-oawg43e6ea-uc.a.run.app/swagger-ui/index.html`
+- Marketplace: `https://gigu-gig-marketplace-service-oawg43e6ea-uc.a.run.app/swagger-ui/index.html`
+- Pulls: `https://gigu-pulls-service-149855215912.us-central1.run.app/swagger-ui/index.html`
+- Chat: `https://gigu-chat-notification-service-oawg43e6ea-uc.a.run.app/swagger-ui/index.html`
 
-## Local Run
-Required profile: `local`
+## Health
+- Access: `https://gigu-access-profile-service-oawg43e6ea-uc.a.run.app/actuator/health`
+- Marketplace: `https://gigu-gig-marketplace-service-oawg43e6ea-uc.a.run.app/actuator/health`
+- Pulls: `https://gigu-pulls-service-149855215912.us-central1.run.app/actuator/health`
+- Chat: `https://gigu-chat-notification-service-oawg43e6ea-uc.a.run.app/actuator/health`
 
-```powershell
-cd "C:\Users\VR\Desktop\Gigu Code\backend-microservices"
-powershell -ExecutionPolicy Bypass -File .\scripts\run-local-all.ps1
-```
-
-Smoke test:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\smoke-test-local.ps1
-```
-
-Note: Spring Boot Dashboard can fail if it launches with default profile; use the `local` launch configurations or the script above.
-
-## Swagger URLs
-- Access: `http://localhost:8081/swagger-ui.html`
-- Marketplace: `http://localhost:8082/swagger-ui.html`
-- Pulls: `http://localhost:8083/swagger-ui.html`
-- Chat: `http://localhost:8084/swagger-ui.html`
-
-Pulls service compatibility note:
-- Service name/folder: `pulls-service`
-- API base path remains: `/api/v1/engagement/**`
-
-## Render Notes
-See `render/render-services.md` for root directories, env vars, build/start commands, health endpoint, and Swagger endpoints.
-
-## Testing
-Run per service:
-```bash
-cd services/<service-name>
-mvn clean verify
-```
-JaCoCo minimum coverage is 85%.
+## Deploy
+`./gcloud/deploy-all.ps1`

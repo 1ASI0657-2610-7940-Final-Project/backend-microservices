@@ -1,69 +1,45 @@
 {
-    "version":  "0.2.0",
-    "configurations":  [
-                           {
-                               "type":  "java",
-                               "name":  "AccessProfileService local",
-                               "request":  "launch",
-                               "cwd":  "${workspaceFolder}/services/access-profile-service",
-                               "mainClass":  "com.gigu.accessprofile.AccessProfileServiceApplication",
-                               "projectName":  "access-profile-service",
-                               "envFile":  "${workspaceFolder}/.env",
-                               "env":  {
-                                           "SPRING_PROFILES_ACTIVE":  "local",
-                                           "SPRING_DATASOURCE_URL":  "${env:SUPABASE_JDBC_URL}",
-                                           "SPRING_DATASOURCE_USERNAME":  "${env:SUPABASE_DB_USERNAME}",
-                                           "SPRING_DATASOURCE_PASSWORD":  "${env:SUPABASE_DB_PASSWORD}"
-                                       },
-                               "vmArgs":  "-Dspring.profiles.active=local -Dcom.sun.management.jmxremote"
-                           },
-                           {
-                               "type":  "java",
-                               "name":  "GigMarketplaceService local",
-                               "request":  "launch",
-                               "cwd":  "${workspaceFolder}/services/gig-marketplace-service",
-                               "mainClass":  "com.gigu.marketplace.GigMarketplaceServiceApplication",
-                               "projectName":  "gig-marketplace-service",
-                               "envFile":  "${workspaceFolder}/.env",
-                               "env":  {
-                                           "SPRING_PROFILES_ACTIVE":  "local",
-                                           "SPRING_DATASOURCE_URL":  "${env:SUPABASE_JDBC_URL}",
-                                           "SPRING_DATASOURCE_USERNAME":  "${env:SUPABASE_DB_USERNAME}",
-                                           "SPRING_DATASOURCE_PASSWORD":  "${env:SUPABASE_DB_PASSWORD}"
-                                       },
-                               "vmArgs":  "-Dspring.profiles.active=local -Dcom.sun.management.jmxremote"
-                           },
-                           {
-                               "type":  "java",
-                               "name":  "PullsService local",
-                               "request":  "launch",
-                               "cwd":  "${workspaceFolder}/services/pulls-service",
-                               "mainClass":  "com.gigu.engagement.PullsServiceApplication",
-                               "projectName":  "pulls-service",
-                               "envFile":  "${workspaceFolder}/.env",
-                               "env":  {
-                                           "SPRING_PROFILES_ACTIVE":  "local",
-                                           "SPRING_DATASOURCE_URL":  "${env:SUPABASE_JDBC_URL}",
-                                           "SPRING_DATASOURCE_USERNAME":  "${env:SUPABASE_DB_USERNAME}",
-                                           "SPRING_DATASOURCE_PASSWORD":  "${env:SUPABASE_DB_PASSWORD}"
-                                       },
-                               "vmArgs":  "-Dspring.profiles.active=local"
-                           },
-                           {
-                               "type":  "java",
-                               "name":  "ChatNotificationService local",
-                               "request":  "launch",
-                               "cwd":  "${workspaceFolder}/services/chat-notification-service",
-                               "mainClass":  "com.gigu.chatnotification.ChatNotificationServiceApplication",
-                               "projectName":  "chat-notification-service",
-                               "envFile":  "${workspaceFolder}/.env",
-                               "env":  {
-                                           "SPRING_PROFILES_ACTIVE":  "local",
-                                           "SPRING_DATASOURCE_URL":  "${env:SUPABASE_JDBC_URL}",
-                                           "SPRING_DATASOURCE_USERNAME":  "${env:SUPABASE_DB_USERNAME}",
-                                           "SPRING_DATASOURCE_PASSWORD":  "${env:SUPABASE_DB_PASSWORD}"
-                                       },
-                               "vmArgs":  "-Dspring.profiles.active=local -Dcom.sun.management.jmxremote"
-                           }
-                       ]
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "AccessProfileService local",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/services/access-profile-service",
+      "mainClass": "com.gigu.accessprofile.AccessProfileServiceApplication",
+      "projectName": "access-profile-service",
+      "envFile": "${workspaceFolder}/_local-gcloud-config/local.env",
+      "vmArgs": "-Dspring.profiles.active=local"
+    },
+    {
+      "type": "java",
+      "name": "GigMarketplaceService local",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/services/gig-marketplace-service",
+      "mainClass": "com.gigu.marketplace.GigMarketplaceServiceApplication",
+      "projectName": "gig-marketplace-service",
+      "envFile": "${workspaceFolder}/_local-gcloud-config/local.env",
+      "vmArgs": "-Dspring.profiles.active=local"
+    },
+    {
+      "type": "java",
+      "name": "PullsService local",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/services/pulls-service",
+      "mainClass": "com.gigu.engagement.PullsServiceApplication",
+      "projectName": "pulls-service",
+      "envFile": "${workspaceFolder}/_local-gcloud-config/local.env",
+      "vmArgs": "-Dspring.profiles.active=local"
+    },
+    {
+      "type": "java",
+      "name": "ChatNotificationService local",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/services/chat-notification-service",
+      "mainClass": "com.gigu.chatnotification.ChatNotificationServiceApplication",
+      "projectName": "chat-notification-service",
+      "envFile": "${workspaceFolder}/_local-gcloud-config/local.env",
+      "vmArgs": "-Dspring.profiles.active=local"
+    }
+  ]
 }

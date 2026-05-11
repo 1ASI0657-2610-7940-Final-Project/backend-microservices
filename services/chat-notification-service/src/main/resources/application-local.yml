@@ -1,15 +1,13 @@
 server:
-  port: ${PORT:10000}
+  port: 8084
 
 spring:
   datasource:
-    url: ${SPRING_DATASOURCE_URL:${SUPABASE_JDBC_URL}}
-    username: ${SPRING_DATASOURCE_USERNAME:${SUPABASE_DB_USERNAME}}
-    password: ${SPRING_DATASOURCE_PASSWORD:${SUPABASE_DB_PASSWORD}}
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: org.postgresql.Driver
     hikari:
-      username: ${SPRING_DATASOURCE_USERNAME:${SUPABASE_DB_USERNAME}}
-      password: ${SPRING_DATASOURCE_PASSWORD:${SUPABASE_DB_PASSWORD}}
       maximum-pool-size: 3
       minimum-idle: 1
       connection-timeout: 30000
@@ -31,12 +29,3 @@ app:
     secret: ${JWT_SECRET}
 
 SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN}
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health
-  endpoint:
-    health:
-      show-details: never

@@ -1,15 +1,13 @@
 server:
-  port: ${PORT:10000}
+  port: ${PORT:8080}
 
 spring:
   datasource:
-    url: ${SPRING_DATASOURCE_URL:${SUPABASE_JDBC_URL}}
-    username: ${SPRING_DATASOURCE_USERNAME:${SUPABASE_DB_USERNAME}}
-    password: ${SPRING_DATASOURCE_PASSWORD:${SUPABASE_DB_PASSWORD}}
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: org.postgresql.Driver
     hikari:
-      username: ${SPRING_DATASOURCE_USERNAME:${SUPABASE_DB_USERNAME}}
-      password: ${SPRING_DATASOURCE_PASSWORD:${SUPABASE_DB_PASSWORD}}
       maximum-pool-size: 3
       minimum-idle: 1
       connection-timeout: 30000
@@ -22,18 +20,15 @@ spring:
     defer-datasource-initialization: false
     properties:
       hibernate:
-        default_schema: marketplace_schema
+        default_schema: chat_notification_schema
         dialect: org.hibernate.dialect.PostgreSQLDialect
     open-in-view: false
 
 app:
   jwt:
     secret: ${JWT_SECRET}
-  supabase:
-    url: ${SUPABASE_URL}
-    service-role-key: ${SUPABASE_SERVICE_ROLE_KEY}
-    storage:
-      gig-media-bucket: ${SUPABASE_STORAGE_BUCKET_GIG_MEDIA}
+
+SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN}
 
 management:
   endpoints:
