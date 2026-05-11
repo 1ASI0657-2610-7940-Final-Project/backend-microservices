@@ -16,10 +16,10 @@
 - Health Endpoint: `/v3/api-docs`
 - Swagger URL: `/swagger-ui.html`
 
-## gigu-pull-engagement-service
-- Root Directory: `services/pull-engagement-service`
+## gigu-pulls-service
+- Root Directory: `services/pulls-service`
 - Build Command: `mvn clean package`
-- Start Command: `java -jar target/pull-engagement-service-0.0.1-SNAPSHOT.jar`
+- Start Command: `java -jar target/pulls-service-0.0.1-SNAPSHOT.jar`
 - Environment Variables: `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD`, `JWT_SECRET`, `SERVICE_TOKEN`
 - Health Endpoint: `/v3/api-docs`
 - Swagger URL: `/swagger-ui.html`

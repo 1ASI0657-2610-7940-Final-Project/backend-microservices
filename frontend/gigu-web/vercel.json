@@ -10,7 +10,7 @@
     },
     {
       "source": "/api/engagement/:path*",
-      "destination": "https://gigu-pull-engagement-service.onrender.com/api/v1/engagement/:path*"
+      "destination": "https://gigu-pulls-service.onrender.com/api/v1/engagement/:path*"
     },
     {
       "source": "/api/chat/:path*",
