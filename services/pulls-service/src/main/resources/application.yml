@@ -10,7 +10,7 @@ spring:
       ddl-auto: update
     properties:
       hibernate:
-        default_schema: chat_notification_schema
+        default_schema: engagement_schema
   sql:
     init:
       mode: always
