@@ -3,6 +3,7 @@
 This repo is prepared for **4 independent Render Docker Web Services** (no Docker Compose required in production).
 
 All services must run with:
+- deploy branch `feature/main-app-logic` (single deploy branch for all services)
 - `SPRING_PROFILES_ACTIVE=render`
 - `SPRING_DATASOURCE_URL` + `SPRING_DATASOURCE_USERNAME` + `SPRING_DATASOURCE_PASSWORD` as primary datasource variables in Render
 - `SUPABASE_JDBC_URL` + `SUPABASE_DB_USERNAME` + `SUPABASE_DB_PASSWORD` as compatibility fallback (set both families with the same values)
@@ -22,6 +23,11 @@ All services must run with:
 - `gigu-chat-notification-service`
 
 Because services are split across accounts, use **public HTTPS Render URLs** for service-to-service calls. Do not use private networking across accounts.
+
+## Deploy Source (Render Dashboard)
+- Repository: this repository
+- Branch for all 4 services: `feature/main-app-logic`
+- Services differ only by `Root Directory`
 
 ## Service 1
 Name:

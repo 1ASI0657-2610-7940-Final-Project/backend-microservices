@@ -22,6 +22,11 @@
 - `feature/chat-notification-service`
 - `feature/main-app-logic`
 
+Deploy note:
+- Render must deploy all 4 services from `feature/main-app-logic`.
+- Service separation in Render is done only by `Root Directory`.
+- Feature branches above are internal development branches, not deploy branches.
+
 ## Local Run
 Required profile: `local`
 
