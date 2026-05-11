@@ -4,6 +4,8 @@ This repo is prepared for **4 independent Render Docker Web Services** (no Docke
 
 All services must run with:
 - `SPRING_PROFILES_ACTIVE=render`
+- `SPRING_DATASOURCE_URL` + `SPRING_DATASOURCE_USERNAME` + `SPRING_DATASOURCE_PASSWORD` as primary datasource variables in Render
+- `SUPABASE_JDBC_URL` + `SUPABASE_DB_USERNAME` + `SUPABASE_DB_PASSWORD` as compatibility fallback (set both families with the same values)
 - shared Supabase PostgreSQL
 - same `JWT_SECRET` across all 4 services
 - same `INTERNAL_SERVICE_TOKEN` across Pulls + Chat Notification
@@ -36,6 +38,9 @@ Health Check Path:
 
 Required environment variables:
 - `SPRING_PROFILES_ACTIVE=render`
+- `SPRING_DATASOURCE_URL=jdbc:postgresql://...`
+- `SPRING_DATASOURCE_USERNAME=...`
+- `SPRING_DATASOURCE_PASSWORD=<SUPABASE_DB_PASSWORD>`
 - `SUPABASE_JDBC_URL=jdbc:postgresql://...`
 - `SUPABASE_DB_USERNAME=...`
 - `SUPABASE_DB_PASSWORD=<SUPABASE_DB_PASSWORD>`
@@ -60,6 +65,9 @@ Health Check Path:
 
 Required environment variables:
 - `SPRING_PROFILES_ACTIVE=render`
+- `SPRING_DATASOURCE_URL=jdbc:postgresql://...`
+- `SPRING_DATASOURCE_USERNAME=...`
+- `SPRING_DATASOURCE_PASSWORD=<SUPABASE_DB_PASSWORD>`
 - `SUPABASE_JDBC_URL=jdbc:postgresql://...`
 - `SUPABASE_DB_USERNAME=...`
 - `SUPABASE_DB_PASSWORD=<SUPABASE_DB_PASSWORD>`
@@ -84,6 +92,9 @@ Health Check Path:
 
 Required environment variables:
 - `SPRING_PROFILES_ACTIVE=render`
+- `SPRING_DATASOURCE_URL=jdbc:postgresql://...`
+- `SPRING_DATASOURCE_USERNAME=...`
+- `SPRING_DATASOURCE_PASSWORD=<SUPABASE_DB_PASSWORD>`
 - `SUPABASE_JDBC_URL=jdbc:postgresql://...`
 - `SUPABASE_DB_USERNAME=...`
 - `SUPABASE_DB_PASSWORD=<SUPABASE_DB_PASSWORD>`
@@ -109,6 +120,9 @@ Health Check Path:
 
 Required environment variables:
 - `SPRING_PROFILES_ACTIVE=render`
+- `SPRING_DATASOURCE_URL=jdbc:postgresql://...`
+- `SPRING_DATASOURCE_USERNAME=...`
+- `SPRING_DATASOURCE_PASSWORD=<SUPABASE_DB_PASSWORD>`
 - `SUPABASE_JDBC_URL=jdbc:postgresql://...`
 - `SUPABASE_DB_USERNAME=...`
 - `SUPABASE_DB_PASSWORD=<SUPABASE_DB_PASSWORD>`
@@ -128,6 +142,7 @@ If final Render service names differ, update these env vars manually:
 ## Production Safety Checklist
 
 - No render profile points to `localhost:5432`.
+- Never use datasource usernames like `postgres` in Render. Use the full Supabase pooled user (e.g. `postgres.<project-ref>`).
 - No render profile hardcodes localhost internal service URLs.
 - Runtime Docker command uses `PORT` env var, not fixed service ports.
 - `/actuator/health` is publicly reachable (security whitelist present).
