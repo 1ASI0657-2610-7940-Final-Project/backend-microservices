@@ -21,13 +21,13 @@ public class AccessController {
 
     public AccessController(AccessProfileApplicationService service) { this.service = service; }
 
-    @PostMapping("/sign-up")
+    @PostMapping({"/sign-up", "/signup", "/register"})
     public ResponseEntity<Map<String, Object>> signUp(@Valid @RequestBody SignUpRequest request) {
         User user = service.signUp(new SignUpCommand(request.firstName(), request.lastName(), request.email(), request.password(), request.role()));
         return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("id", user.id(), "email", user.email(), "roles", user.roles().stream().map(Enum::name).toList(), "createdAt", DateTimeFormatter.ISO_INSTANT.format(user.createdAt())));
     }
 
-    @PostMapping("/login")
+    @PostMapping({"/login", "/sign-in", "/signin"})
     public ResponseEntity<Map<String, Object>> login(@Valid @RequestBody LoginRequest request) {
         var login = service.login(new LoginCommand(request.email(), request.password()));
         User user = login.user();
