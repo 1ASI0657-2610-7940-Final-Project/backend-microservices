@@ -16,7 +16,7 @@ import java.util.List;
 
 @Configuration
 public class SecurityConfig {
-    @Value("${CORS_ALLOWED_ORIGINS:http://localhost:5173}")
+    @Value("${CORS_ALLOWED_ORIGINS:http://localhost:5173,https://*.vercel.app}")
     private String corsAllowedOrigins;
 
     @Bean SecurityFilterChain filterChain(HttpSecurity http, JwtAuthFilter filter) throws Exception {
@@ -34,12 +34,13 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(Arrays.stream(corsAllowedOrigins.split(","))
+        config.setAllowedOriginPatterns(Arrays.stream(corsAllowedOrigins.split(","))
                 .map(String::trim)
                 .filter(origin -> !origin.isBlank())
                 .toList());
-        config.setAllowedMethods(List.of("GET", "POST", "PATCH", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setExposedHeaders(List.of("Authorization", "Content-Type"));
         config.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
