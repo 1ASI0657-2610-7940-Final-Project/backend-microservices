@@ -37,11 +37,7 @@ public class SecurityConfig {
                                 "/v3/api-docs.yaml",
                                 "/actuator/health",
                                 "/api/v1/access/sign-up",
-                                "/api/v1/access/signup",
-                                "/api/v1/access/register",
                                 "/api/v1/access/login",
-                                "/api/v1/access/sign-in",
-                                "/api/v1/access/signin",
                                 "/api/v1/access/freelancer-profiles/**"
                         ).permitAll()
                         .anyRequest().authenticated())
