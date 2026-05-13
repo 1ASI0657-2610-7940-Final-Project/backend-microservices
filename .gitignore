@@ -6,4 +6,6 @@ target/
 logs/
 _local-render-config/
 
-_local-gcloud-config/
+_local-gcloud-config/*
+!_local-gcloud-config/README.md
+!_local-gcloud-config/*.example
