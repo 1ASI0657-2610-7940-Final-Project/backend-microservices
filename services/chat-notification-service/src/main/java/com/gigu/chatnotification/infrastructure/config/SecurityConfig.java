@@ -26,7 +26,7 @@ public class SecurityConfig {
                 .formLogin(c->c.disable())
                 .sessionManagement(s->s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(a->a.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/swagger-ui.html","/swagger-ui/**","/v3/api-docs/**","/v3/api-docs.yaml","/actuator/health","/api/v1/chat/internal/notifications").permitAll().anyRequest().authenticated())
+                        .requestMatchers("/swagger-ui.html","/swagger-ui/**","/v3/api-docs/**","/v3/api-docs.yaml","/actuator/health","/api/v1/chat/internal/notifications","/internal/pubsub/chat-events","/ws","/ws/**").permitAll().anyRequest().authenticated())
                 .addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

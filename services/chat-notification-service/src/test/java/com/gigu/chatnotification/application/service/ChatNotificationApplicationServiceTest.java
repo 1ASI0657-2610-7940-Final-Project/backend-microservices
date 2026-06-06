@@ -1,6 +1,8 @@
 package com.gigu.chatnotification.application.service;
 
 import com.gigu.chatnotification.application.dto.*;
+import com.gigu.chatnotification.application.event.ChatMessageCreatedEvent;
+import com.gigu.chatnotification.application.port.out.ChatEventPublisherPort;
 import com.gigu.chatnotification.application.port.out.ChatNotificationRepositoryPort;
 import com.gigu.chatnotification.domain.model.*;
 import java.time.Instant;
@@ -15,6 +17,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class ChatNotificationApplicationServiceTest {
     @Mock ChatNotificationRepositoryPort repo;
+    @Mock ChatEventPublisherPort chatEventPublisher;
     @InjectMocks ChatNotificationApplicationService service;
 
     @Test void createConversationCreatesNewConversation(){
@@ -96,6 +99,7 @@ class ChatNotificationApplicationServiceTest {
         when(repo.getConversation(cid)).thenReturn(Optional.of(new Conversation(cid,a,b,null,Instant.now())));
         service.sendMessage(cid,new SendMessageCommand("hello",a));
         verify(repo).saveNotification(any());
+        verify(chatEventPublisher).publish(any(ChatMessageCreatedEvent.class));
     }
 
     @Test void markNotificationReadValidatesOwner(){
