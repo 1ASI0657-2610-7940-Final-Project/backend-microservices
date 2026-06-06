@@ -62,23 +62,32 @@ $senderId = [guid]::NewGuid().ToString()
 $receiverId = [guid]::NewGuid().ToString()
 $occurredAt = (Get-Date).ToUniversalTime().ToString("o")
 
-$payload = @{
-    eventType = 'ChatMessageCreated'
-    messageId = $messageId
-    conversationId = $conversationId
-    senderId = $senderId
-    receiverId = $receiverId
-    content = "Pub/Sub manual test at $occurredAt"
-    contentPreview = "Pub/Sub manual test at $occurredAt"
-    occurredAt = $occurredAt
-    metadata = @{
-        resourceType = 'CONVERSATION'
-        origin = 'manual-test'
-    }
-} | ConvertTo-Json -Depth 8 -Compress
+$payload = @"
+{"eventType":"ChatMessageCreated","messageId":"$messageId","conversationId":"$conversationId","senderId":"$senderId","receiverId":"$receiverId","content":"Pub/Sub manual test at $occurredAt","contentPreview":"Pub/Sub manual test at $occurredAt","occurredAt":"$occurredAt","metadata":{"resourceType":"CONVERSATION","origin":"manual-test"}}
+"@.Trim()
 
-gcloud pubsub topics publish $TopicName --project $ProjectId --message $payload | Out-Null
+$accessToken = (gcloud auth print-access-token).Trim()
+if (-not $accessToken) {
+    throw 'No pude obtener un access token de gcloud'
+}
+
+$encodedPayload = [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($payload))
+$publishBody = @{
+    messages = @(
+        @{
+            data = $encodedPayload
+        }
+    )
+}
+
+Invoke-RestMethod `
+    -Method Post `
+    -Uri ("https://pubsub.googleapis.com/v1/projects/{0}/topics/{1}:publish" -f $ProjectId, $TopicName) `
+    -Headers @{ Authorization = "Bearer $accessToken" } `
+    -ContentType 'application/json' `
+    -Body ($publishBody | ConvertTo-Json -Depth 6 -Compress) | Out-Null
 
 Write-Host "Mensaje de prueba publicado en $TopicName"
-Write-Host "Push endpoint: $pushEndpoint"
-Write-Host "Revisa logs del chat service y el websocket en el frontend."
+Write-Host ("Push endpoint: " + ($pushEndpoint -replace [regex]::Escape($token), '***TOKEN***'))
+Start-Sleep -Seconds 10
+gcloud logging read "resource.type=`"cloud_run_revision`" AND resource.labels.service_name=`"$ServiceName`"" --project $ProjectId --limit 20 --format="value(timestamp,textPayload)"
