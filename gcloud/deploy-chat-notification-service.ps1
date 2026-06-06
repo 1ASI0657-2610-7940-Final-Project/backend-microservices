@@ -1,13 +1,13 @@
 param(
     [string]$ProjectId = 'dosys-rest-api',
-    [string]$Region = 'us-central1'
+    [string]$Region = 'us-central1',
+    [string]$ServiceName = 'gigu-chat-notification-service'
 )
 
 $ErrorActionPreference = 'Stop'
 
-$serviceName = 'gigu-chat-notification-service'
 $serviceRoot = 'services/chat-notification-service'
-$envFile = '_local-gcloud-config/chat-notification-service.env.yaml'
+$envFile = '_local-gcloud-config/chat-cloud.env.yaml'
 
 function Assert-GCloudAuth {
     $account = (gcloud auth list --filter=status:ACTIVE --format="value(account)").Trim()
@@ -24,12 +24,14 @@ Assert-GCloudAuth
 
 gcloud config set project $ProjectId | Out-Null
 
-gcloud run deploy $serviceName `
+gcloud run deploy $ServiceName `
   --project $ProjectId `
   --region $Region `
   --source $serviceRoot `
   --allow-unauthenticated `
   --env-vars-file $envFile
 
-$url = gcloud run services describe $serviceName --region $Region --project $ProjectId --format="value(status.url)"
-Write-Host "Cloud Run URL ($serviceName): $url"
+$url = gcloud run services describe $ServiceName --region $Region --project $ProjectId --format="value(status.url)"
+$serviceAccount = gcloud run services describe $ServiceName --region $Region --project $ProjectId --format="value(spec.template.spec.serviceAccountName)"
+Write-Host "Cloud Run URL ($ServiceName): $url"
+Write-Host "Service account ($ServiceName): $serviceAccount"

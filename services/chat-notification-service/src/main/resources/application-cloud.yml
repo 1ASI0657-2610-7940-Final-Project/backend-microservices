@@ -12,17 +12,20 @@ spring:
       maximum-pool-size: 3
       minimum-idle: 1
       connection-timeout: 30000
+      initialization-fail-timeout: -1
   sql:
     init:
-      mode: always
+      mode: never
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     defer-datasource-initialization: false
     properties:
       hibernate:
         default_schema: chat_notification_schema
         dialect: org.hibernate.dialect.PostgreSQLDialect
+        boot:
+          allow_jdbc_metadata_access: false
     open-in-view: false
 
 app:
@@ -30,6 +33,15 @@ app:
     secret: ${JWT_SECRET}
 
 SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN}
+GCP_PROJECT_ID: ${GCP_PROJECT_ID}
+GCP_REGION: ${GCP_REGION}
+PUBSUB_CHAT_TOPIC: ${PUBSUB_CHAT_TOPIC}
+PUBSUB_PUSH_TOKEN: ${PUBSUB_PUSH_TOKEN}
+CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+ACCESS_PROFILE_SERVICE_URL: ${ACCESS_PROFILE_SERVICE_URL}
+GIG_MARKETPLACE_SERVICE_URL: ${GIG_MARKETPLACE_SERVICE_URL}
+PULLS_SERVICE_URL: ${PULLS_SERVICE_URL}
+CHAT_NOTIFICATION_SERVICE_URL: ${CHAT_NOTIFICATION_SERVICE_URL}
 
 management:
   endpoints:
@@ -39,3 +51,6 @@ management:
   endpoint:
     health:
       show-details: never
+  health:
+    db:
+      enabled: false
