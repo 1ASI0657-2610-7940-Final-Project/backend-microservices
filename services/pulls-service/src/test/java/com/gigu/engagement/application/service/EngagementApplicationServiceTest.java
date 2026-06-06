@@ -163,7 +163,7 @@ class EngagementApplicationServiceTest {
 
     @Test void notificationFailureDoesNotRollback(){
         UUID serviceId=UUID.randomUUID(), client=UUID.randomUUID(), freelancer=UUID.randomUUID();
-        when(marketplace.serviceExists(serviceId)).thenReturn(true); when(access.userExists(freelancer)).thenReturn(true); when(repo.saveRequest(any())).thenAnswer(i->i.getArgument(0)); doThrow(new RuntimeException("down")).when(notifications).notifyBestEffort(any(), any(), any());
+        when(marketplace.serviceExists(serviceId)).thenReturn(true); when(access.userExists(freelancer)).thenReturn(true); when(repo.saveRequest(any())).thenAnswer(i->i.getArgument(0)); doThrow(new RuntimeException("down")).when(notifications).notifyBestEffort(any(), any(), any(), any(), any());
         var r=service.createRequest(new CreateRequestCommand(serviceId,freelancer,"m",BigDecimal.valueOf(200),CurrencyCode.PEN,7,client,true));
         assertNotNull(r.id());
     }
