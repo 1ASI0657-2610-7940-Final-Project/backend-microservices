@@ -29,7 +29,7 @@ public class EngagementApplicationService implements EngagementUseCase {
         if(!marketplace.serviceExists(c.serviceId())) throw new IllegalArgumentException("service not found");
         if(!accessProfile.userExists(c.freelancerId())) throw new IllegalArgumentException("freelancer not found");
         var req = repo.saveRequest(new ProjectRequest(UUID.randomUUID(), c.serviceId(), c.clientId(), c.freelancerId(), c.message(), c.proposedPrice(), c.currency(), c.proposedDeliveryDays(), ProjectRequestStatus.PENDING, Instant.now()));
-        try { notifications.notifyBestEffort("REQUEST_CREATED", c.freelancerId().toString(), "New request"); } catch (Exception e){ log.warn("notification failure", e); }
+        try { notifications.notifyBestEffort("REQUEST_CREATED", c.freelancerId().toString(), "New request", "REQUEST", req.id()); } catch (Exception e){ log.warn("notification failure", e); }
         return req;
     }
 
@@ -44,11 +44,11 @@ public class EngagementApplicationService implements EngagementUseCase {
             var agr = repo.saveAgreement(new Agreement(UUID.randomUUID(), req.id(), c.finalPrice()==null?req.proposedPrice():c.finalPrice(), req.currency(), c.finalDeliveryDays()==null?req.proposedDeliveryDays():c.finalDeliveryDays(), c.responseMessage(), Instant.now()));
             var project = repo.saveProject(new Project(UUID.randomUUID(), req.id(), agr.id(), req.serviceId(), req.clientId(), req.freelancerId(), ProjectStatus.PENDING, agr.finalPrice(), agr.currency(), Instant.now(), Instant.now()));
             repo.saveStatusHistory(new ProjectStatusHistory(UUID.randomUUID(), project.id(), ProjectStatus.PENDING, "created", Instant.now()));
-            try { notifications.notifyBestEffort("REQUEST_ACCEPTED", req.clientId().toString(), "Request accepted"); } catch (Exception e){ log.warn("notification failure", e); }
+            try { notifications.notifyBestEffort("REQUEST_ACCEPTED", req.clientId().toString(), "Request accepted", "REQUEST", req.id()); } catch (Exception e){ log.warn("notification failure", e); }
             return new DecisionResult(accepted.id(), accepted.status().name(), agr, project);
         }
         var rejected = repo.updateRequest(new ProjectRequest(req.id(), req.serviceId(), req.clientId(), req.freelancerId(), req.message(), req.proposedPrice(), req.currency(), req.proposedDeliveryDays(), ProjectRequestStatus.REJECTED, req.createdAt()));
-        try { notifications.notifyBestEffort("REQUEST_REJECTED", req.clientId().toString(), "Request rejected"); } catch (Exception e){ log.warn("notification failure", e); }
+        try { notifications.notifyBestEffort("REQUEST_REJECTED", req.clientId().toString(), "Request rejected", "REQUEST", req.id()); } catch (Exception e){ log.warn("notification failure", e); }
         return new DecisionResult(rejected.id(), rejected.status().name(), null, null);
     }
 
@@ -62,7 +62,7 @@ public class EngagementApplicationService implements EngagementUseCase {
         var updated = repo.updateProject(new Project(p.id(), p.requestId(), p.agreementId(), p.serviceId(), p.clientId(), p.freelancerId(), c.status(), p.finalPrice(), p.currency(), p.createdAt(), Instant.now()));
         var history = repo.saveStatusHistory(new ProjectStatusHistory(UUID.randomUUID(), p.id(), c.status(), c.comment(), Instant.now()));
         String other = p.clientId().toString().equals(c.actorId()) ? p.freelancerId().toString() : p.clientId().toString();
-        try { notifications.notifyBestEffort("PROJECT_STATUS_CHANGED", other, "Project status changed"); } catch (Exception e){ log.warn("notification failure", e); }
+        try { notifications.notifyBestEffort("PROJECT_STATUS_CHANGED", other, "Project status changed", "PROJECT", p.id()); } catch (Exception e){ log.warn("notification failure", e); }
         return new StatusUpdateResult(updated.id(), p.status().name(), updated.status().name(), history.changedAt());
     }
 
@@ -76,7 +76,7 @@ public class EngagementApplicationService implements EngagementUseCase {
         if(c.rating()<1 || c.rating()>5) throw new IllegalArgumentException("invalid rating");
         if(repo.existsReview(projectId, reviewer)) throw new IllegalArgumentException("duplicate review");
         var saved = repo.saveReview(new Review(UUID.randomUUID(), projectId, reviewer, c.revieweeId(), c.rating(), c.comment(), Instant.now()));
-        try { notifications.notifyBestEffort("REVIEW_CREATED", c.revieweeId().toString(), "New review"); } catch (Exception e){ log.warn("notification failure", e); }
+        try { notifications.notifyBestEffort("REVIEW_CREATED", c.revieweeId().toString(), "New review", "PROJECT", p.id()); } catch (Exception e){ log.warn("notification failure", e); }
         try { marketplace.updateReputationBestEffort(c.revieweeId()); } catch (Exception e){ log.warn("reputation update failed", e); }
         return saved;
     }

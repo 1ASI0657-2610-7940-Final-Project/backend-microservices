@@ -36,7 +36,7 @@ public class ChatNotificationController {
     public ResponseEntity<Map<String,Object>> send(Authentication auth,@PathVariable UUID id,@Valid @RequestBody SendMessageBody body){ AuthUser u=(AuthUser)auth.getPrincipal(); var m=service.sendMessage(id,new SendMessageCommand(body.content(),u.id())); return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("id",m.id(),"conversationId",m.conversationId(),"senderId",m.senderId(),"content",m.content(),"sentAt",DateTimeFormatter.ISO_INSTANT.format(m.sentAt()))); }
 
     @GetMapping("/notifications") @SecurityRequirement(name="bearerAuth")
-    public Map<String,Object> notifications(Authentication auth,@RequestParam(required=false) Boolean unreadOnly,@RequestParam(defaultValue="1") int page,@RequestParam(defaultValue="20") int pageSize){ AuthUser u=(AuthUser)auth.getPrincipal(); var n=service.listNotifications(u.id(),unreadOnly,page,pageSize); var data=n.data().stream().map(x->Map.of("id",x.id(),"type",x.type(),"title",x.title(),"message",x.message(),"read",x.read(),"createdAt",DateTimeFormatter.ISO_INSTANT.format(x.createdAt()))).toList(); return Map.of("data",data,"page",n.page(),"pageSize",n.pageSize(),"total",n.total()); }
+    public Map<String,Object> notifications(Authentication auth,@RequestParam(required=false) Boolean unreadOnly,@RequestParam(defaultValue="1") int page,@RequestParam(defaultValue="20") int pageSize){ AuthUser u=(AuthUser)auth.getPrincipal(); var n=service.listNotifications(u.id(),unreadOnly,page,pageSize); var data=n.data().stream().map(this::notificationResponse).toList(); return Map.of("data",data,"page",n.page(),"pageSize",n.pageSize(),"total",n.total()); }
 
     @PatchMapping("/notifications/{id}/read") @SecurityRequirement(name="bearerAuth")
     public Map<String,Object> read(Authentication auth,@PathVariable UUID id){ AuthUser u=(AuthUser)auth.getPrincipal(); var n=service.markRead(id,u.id()); return Map.of("id",n.id(),"read",n.read(),"readAt",DateTimeFormatter.ISO_INSTANT.format(n.readAt())); }
@@ -51,5 +51,22 @@ public class ChatNotificationController {
     public ResponseEntity<Map<String,Object>> ticket(Authentication auth,@Valid @RequestBody TicketBody body){ AuthUser u=(AuthUser)auth.getPrincipal(); var t=service.createSupportTicket(new CreateTicketCommand(body.subject(),body.description(),u.id())); return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("id",t.id(),"status",t.status(),"createdAt",DateTimeFormatter.ISO_INSTANT.format(t.createdAt()))); }
 
     @PostMapping("/internal/notifications")
-    public ResponseEntity<Map<String,Object>> internalNotify(@RequestHeader(name="X-Service-Token",required=false) String token,@Valid @RequestBody InternalNotificationBody body){ if(token==null || !token.equals(serviceToken)) throw new SecurityException("forbidden"); var n=service.createInternalNotification(new CreateInternalNotificationCommand(body.recipientId(),body.type(),body.title(),body.message(),body.resourceType(),body.resourceId())); return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("id",n.id(),"recipientId",n.recipientId(),"read",n.read(),"createdAt",DateTimeFormatter.ISO_INSTANT.format(n.createdAt()))); }
+    public ResponseEntity<Map<String,Object>> internalNotify(@RequestHeader(name="X-Service-Token",required=false) String token,@Valid @RequestBody InternalNotificationBody body){ if(token==null || !token.equals(serviceToken)) throw new SecurityException("forbidden"); var n=service.createInternalNotification(new CreateInternalNotificationCommand(body.recipientId(),body.type(),body.title(),body.message(),body.resourceType(),body.resourceId())); return ResponseEntity.status(HttpStatus.CREATED).body(notificationResponse(n)); }
+
+    private Map<String,Object> notificationResponse(com.gigu.chatnotification.domain.model.Notification n) {
+        Map<String,Object> response = new LinkedHashMap<>();
+        response.put("id", n.id());
+        response.put("type", n.type());
+        response.put("title", n.title());
+        response.put("message", n.message());
+        response.put("read", n.read());
+        response.put("createdAt", DateTimeFormatter.ISO_INSTANT.format(n.createdAt()));
+        if (n.resourceType() != null) {
+            response.put("resourceType", n.resourceType());
+        }
+        if (n.resourceId() != null) {
+            response.put("resourceId", n.resourceId());
+        }
+        return response;
+    }
 }

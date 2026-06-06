@@ -2,9 +2,11 @@ package com.gigu.chatnotification.application.service;
 
 import com.gigu.chatnotification.application.dto.*;
 import com.gigu.chatnotification.application.event.ChatMessageCreatedEvent;
+import com.gigu.chatnotification.application.event.NotificationCreatedEvent;
 import com.gigu.chatnotification.application.port.in.ChatNotificationUseCase;
 import com.gigu.chatnotification.application.port.out.ChatEventPublisherPort;
 import com.gigu.chatnotification.application.port.out.ChatNotificationRepositoryPort;
+import com.gigu.chatnotification.application.port.out.NotificationBroadcastPort;
 import com.gigu.chatnotification.domain.model.*;
 import java.time.Instant;
 import java.util.*;
@@ -22,8 +24,9 @@ public class ChatNotificationApplicationService implements ChatNotificationUseCa
 
     private final ChatNotificationRepositoryPort repo;
     private final ChatEventPublisherPort chatEventPublisher;
+    private final NotificationBroadcastPort notificationBroadcastPort;
 
-    public ChatNotificationApplicationService(ChatNotificationRepositoryPort repo, ChatEventPublisherPort chatEventPublisher){ this.repo=repo; this.chatEventPublisher=chatEventPublisher; }
+    public ChatNotificationApplicationService(ChatNotificationRepositoryPort repo, ChatEventPublisherPort chatEventPublisher, NotificationBroadcastPort notificationBroadcastPort){ this.repo=repo; this.chatEventPublisher=chatEventPublisher; this.notificationBroadcastPort=notificationBroadcastPort; }
 
     public Conversation createOrOpenConversation(CreateConversationCommand c){
         if(c.participantId()==null) throw new IllegalArgumentException("participantId required");
@@ -44,7 +47,8 @@ public class ChatNotificationApplicationService implements ChatNotificationUseCa
         Message message = repo.saveMessage(new Message(UUID.randomUUID(),cid,c.actorId(),c.content(),occurredAt));
         var conv=repo.getConversation(cid).orElseThrow();
         UUID other=conv.participantA().equals(c.actorId())?conv.participantB():conv.participantA();
-        repo.saveNotification(new Notification(UUID.randomUUID(),other,"NEW_MESSAGE","Nuevo mensaje",c.content(),"CONVERSATION",cid,false,occurredAt,null));
+        Notification notification = repo.saveNotification(new Notification(UUID.randomUUID(),other,"NEW_MESSAGE","Nuevo mensaje",c.content(),"CONVERSATION",cid,false,occurredAt,null));
+        publishNotificationAfterCommit(notification);
 
         ChatMessageCreatedEvent event = new ChatMessageCreatedEvent(
             "ChatMessageCreated",
@@ -65,7 +69,11 @@ public class ChatNotificationApplicationService implements ChatNotificationUseCa
     public int markAllRead(UUID uid){ return repo.markAllRead(uid); }
     public UserReport createReport(CreateReportCommand c){ if(c.reporterId().equals(c.reportedUserId())) throw new IllegalArgumentException("self report not allowed"); return repo.saveReport(new UserReport(UUID.randomUUID(),c.reporterId(),c.reportedUserId(),c.reason(),c.description(),"OPEN",Instant.now())); }
     public SupportTicket createSupportTicket(CreateTicketCommand c){ if(c.subject()==null || c.subject().isBlank() || c.description()==null || c.description().isBlank()) throw new IllegalArgumentException("subject and description required"); return repo.saveTicket(new SupportTicket(UUID.randomUUID(),c.userId(),c.subject(),c.description(),"OPEN",Instant.now())); }
-    public Notification createInternalNotification(CreateInternalNotificationCommand c){ return repo.saveNotification(new Notification(UUID.randomUUID(),c.recipientId(),c.type(),c.title(),c.message(),c.resourceType(),c.resourceId(),false,Instant.now(),null)); }
+    public Notification createInternalNotification(CreateInternalNotificationCommand c){
+        Notification notification = repo.saveNotification(new Notification(UUID.randomUUID(), c.recipientId(), c.type(), c.title(), c.message(), c.resourceType(), c.resourceId(), false, Instant.now(), null));
+        publishNotificationAfterCommit(notification);
+        return notification;
+    }
 
     private void publishAfterCommit(ChatMessageCreatedEvent event) {
         Runnable publish = () -> {
@@ -94,6 +102,41 @@ public class ChatNotificationApplicationService implements ChatNotificationUseCa
             return "";
         }
         return content.length() <= 160 ? content : content.substring(0, 157) + "...";
+    }
+
+    private void publishNotificationAfterCommit(Notification notification) {
+        NotificationCreatedEvent event = new NotificationCreatedEvent(
+            "NotificationCreated",
+            notification.id(),
+            notification.recipientId(),
+            notification.type(),
+            notification.title(),
+            notification.message(),
+            notification.resourceType(),
+            notification.resourceId(),
+            notification.read(),
+            notification.createdAt()
+        );
+
+        Runnable publish = () -> {
+            try {
+                notificationBroadcastPort.broadcast(event);
+            } catch (Exception e) {
+                log.error("Failed to broadcast notification event", e);
+            }
+        };
+
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    publish.run();
+                }
+            });
+            return;
+        }
+
+        publish.run();
     }
 
     private static Map<String, String> buildMetadata(UUID projectId) {

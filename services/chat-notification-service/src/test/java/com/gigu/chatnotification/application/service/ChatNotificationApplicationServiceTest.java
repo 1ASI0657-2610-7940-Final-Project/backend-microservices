@@ -2,8 +2,10 @@ package com.gigu.chatnotification.application.service;
 
 import com.gigu.chatnotification.application.dto.*;
 import com.gigu.chatnotification.application.event.ChatMessageCreatedEvent;
+import com.gigu.chatnotification.application.event.NotificationCreatedEvent;
 import com.gigu.chatnotification.application.port.out.ChatEventPublisherPort;
 import com.gigu.chatnotification.application.port.out.ChatNotificationRepositoryPort;
+import com.gigu.chatnotification.application.port.out.NotificationBroadcastPort;
 import com.gigu.chatnotification.domain.model.*;
 import java.time.Instant;
 import java.util.*;
@@ -18,6 +20,7 @@ import static org.mockito.Mockito.*;
 class ChatNotificationApplicationServiceTest {
     @Mock ChatNotificationRepositoryPort repo;
     @Mock ChatEventPublisherPort chatEventPublisher;
+    @Mock NotificationBroadcastPort realtimeBroadcaster;
     @InjectMocks ChatNotificationApplicationService service;
 
     @Test void createConversationCreatesNewConversation(){
@@ -84,6 +87,7 @@ class ChatNotificationApplicationServiceTest {
         assertEquals(0, service.listNotifications(u,null,1,20).total());
         var created = service.createInternalNotification(new CreateInternalNotificationCommand(u,"T","t","m","R",UUID.randomUUID()));
         assertEquals(u, created.recipientId());
+        verify(realtimeBroadcaster).broadcast(any(NotificationCreatedEvent.class));
     }
 
     @Test void listMessagesRejectsNonParticipant(){
@@ -96,6 +100,7 @@ class ChatNotificationApplicationServiceTest {
         UUID cid=UUID.randomUUID(), a=UUID.randomUUID(), b=UUID.randomUUID();
         when(repo.isParticipant(cid,a)).thenReturn(true);
         when(repo.saveMessage(any())).thenAnswer(i->i.getArgument(0));
+        when(repo.saveNotification(any())).thenAnswer(i->i.getArgument(0));
         when(repo.getConversation(cid)).thenReturn(Optional.of(new Conversation(cid,a,b,null,Instant.now())));
         service.sendMessage(cid,new SendMessageCommand("hello",a));
         verify(repo).saveNotification(any());
