@@ -42,6 +42,11 @@ public class RestExceptionHandler {
     @ExceptionHandler(ExternalServiceUnavailableException.class)
     ResponseEntity<ErrorResponse> external(ExternalServiceUnavailableException e, HttpServletRequest request) { return build(HttpStatus.SERVICE_UNAVAILABLE, "EXTERNAL_SERVICE_UNAVAILABLE", e.getMessage(), request, Map.of()); }
 
+    @ExceptionHandler(SupabaseStorageException.class)
+    ResponseEntity<ErrorResponse> supabaseStorage(SupabaseStorageException e, HttpServletRequest request) {
+        return build(HttpStatus.BAD_GATEWAY, "SUPABASE_STORAGE_UPLOAD_FAILED", e.getMessage(), request, Map.of());
+    }
+
     @ExceptionHandler({UnauthorizedActionException.class, SecurityException.class, AccessDeniedException.class})
     ResponseEntity<ErrorResponse> forbidden(Exception e, HttpServletRequest request) { return build(HttpStatus.FORBIDDEN, "FORBIDDEN", "Forbidden", request, Map.of()); }
 
