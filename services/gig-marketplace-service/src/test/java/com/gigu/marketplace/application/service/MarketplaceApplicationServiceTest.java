@@ -1,6 +1,7 @@
 package com.gigu.marketplace.application.service;
 
 import com.gigu.marketplace.application.dto.*;
+import com.gigu.marketplace.application.exception.SupabaseStorageException;
 import com.gigu.marketplace.application.port.out.*;
 import com.gigu.marketplace.domain.model.*;
 import com.gigu.marketplace.domain.valueobject.*;
@@ -90,6 +91,16 @@ class MarketplaceApplicationServiceTest {
         var media = app.uploadMedia(sid,owner.toString(),"FREELANCER","image/png","x.png",new byte[]{1},true);
         assertTrue(media.primary());
         verify(mediaRepo).clearPrimary(sid);
+    }
+
+    @Test void mediaUploadFailureDoesNotPersistRow() {
+        UUID sid=UUID.randomUUID(); UUID owner=UUID.randomUUID(); UUID cat=UUID.randomUUID();
+        var s = new ServiceOffering(sid,owner,"Ana","t","d",BigDecimal.TEN,CurrencyCode.PEN,7,ServiceStatus.PUBLISHED,cat,"Design",List.of(),Instant.now(),Instant.now());
+        when(serviceRepo.findById(sid)).thenReturn(Optional.of(s));
+        when(storage.store(any(), any(), any(), any())).thenThrow(new SupabaseStorageException("Supabase storage upload failed: down"));
+
+        assertThrows(SupabaseStorageException.class, () -> app.uploadMedia(sid,owner.toString(),"FREELANCER","image/png","x.png",new byte[]{1},true));
+        verify(mediaRepo, never()).save(any());
     }
 
     @Test void deleteMediaOwnerSuccess() {
