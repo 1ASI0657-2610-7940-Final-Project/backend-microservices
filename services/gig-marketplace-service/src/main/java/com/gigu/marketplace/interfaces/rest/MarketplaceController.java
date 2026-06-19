@@ -3,6 +3,7 @@ package com.gigu.marketplace.interfaces.rest;
 import com.gigu.marketplace.application.dto.*;
 import com.gigu.marketplace.application.port.in.command.MarketplaceCommandUseCase;
 import com.gigu.marketplace.application.port.in.query.MarketplaceQueryUseCase;
+import com.gigu.marketplace.domain.model.ServiceMedia;
 import com.gigu.marketplace.infrastructure.security.AuthUser;
 import com.gigu.marketplace.interfaces.rest.dto.*;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -25,8 +26,9 @@ public class MarketplaceController {
         var result=queries.search(new SearchQuery(category,priceMin,priceMax,minRating,q,page,pageSize));
         List<Map<String,Object>> data=new ArrayList<>();
         for (var s: result.data()) {
+            var media = queries.media(s.id());
             Map<String,Object> m=new LinkedHashMap<>();
-            m.put("id", s.id()); m.put("title", s.title()); m.put("descriptionPreview", s.description().length()>60?s.description().substring(0,60):s.description()); m.put("basePrice", s.basePrice()); m.put("currency", s.currency()); m.put("category", s.categoryName()); m.put("freelancerId", s.freelancerId()); m.put("freelancerDisplayName", s.freelancerDisplayName()); m.put("averageRating", 4.8); m.put("thumbnailUrl", "");
+            m.put("id", s.id()); m.put("title", s.title()); m.put("descriptionPreview", s.description().length()>60?s.description().substring(0,60):s.description()); m.put("basePrice", s.basePrice()); m.put("currency", s.currency()); m.put("category", s.categoryName()); m.put("freelancerId", s.freelancerId()); m.put("freelancerDisplayName", s.freelancerDisplayName()); m.put("averageRating", 4.8); m.put("thumbnailUrl", thumbnailUrl(media));
             data.add(m);
         }
         return ResponseEntity.ok(Map.of("data",data,"total",result.total(),"page",result.page(),"pageSize",result.pageSize()));
@@ -35,13 +37,14 @@ public class MarketplaceController {
     @GetMapping("/services/{id}")
     public ResponseEntity<Map<String,Object>> detail(@PathVariable UUID id){
         var s=queries.detail(id);
+        var media = queries.media(id);
         Map<String,Object> out=new LinkedHashMap<>();
-        out.put("id", s.id()); out.put("title", s.title()); out.put("description", s.description()); out.put("basePrice", s.basePrice()); out.put("currency", s.currency()); out.put("deliveryDays", s.deliveryDays()); out.put("status", s.status()); out.put("category", Map.of("id", s.categoryId(), "name", s.categoryName())); out.put("tags", s.tags()); out.put("freelancer", Map.of("id", s.freelancerId(), "displayName", s.freelancerDisplayName(), "averageRating", 4.8, "reviewsCount", 24)); out.put("media", List.of());
+        out.put("id", s.id()); out.put("title", s.title()); out.put("description", s.description()); out.put("basePrice", s.basePrice()); out.put("currency", s.currency()); out.put("deliveryDays", s.deliveryDays()); out.put("status", s.status()); out.put("category", Map.of("id", s.categoryId(), "name", s.categoryName())); out.put("tags", s.tags()); out.put("freelancer", Map.of("id", s.freelancerId(), "displayName", s.freelancerDisplayName(), "averageRating", 4.8, "reviewsCount", 24)); out.put("thumbnailUrl", thumbnailUrl(media)); out.put("media", media.stream().map(this::mediaToMap).toList());
         return ResponseEntity.ok(out);
     }
 
     @GetMapping("/services/mine") @SecurityRequirement(name="bearerAuth")
-    public List<Map<String,Object>> mine(Authentication auth){ AuthUser u=(AuthUser)auth.getPrincipal(); List<Map<String,Object>> out=new ArrayList<>(); for(var s:queries.mine(u.id())){ Map<String,Object> m=new LinkedHashMap<>(); m.put("id",s.id());m.put("title",s.title());m.put("basePrice",s.basePrice());m.put("currency",s.currency());m.put("status",s.status());m.put("thumbnailUrl",""); out.add(m);} return out; }
+    public List<Map<String,Object>> mine(Authentication auth){ AuthUser u=(AuthUser)auth.getPrincipal(); List<Map<String,Object>> out=new ArrayList<>(); for(var s:queries.mine(u.id())){ var media = queries.media(s.id()); Map<String,Object> m=new LinkedHashMap<>(); m.put("id",s.id());m.put("title",s.title());m.put("basePrice",s.basePrice());m.put("currency",s.currency());m.put("status",s.status());m.put("thumbnailUrl",thumbnailUrl(media)); out.add(m);} return out; }
 
     @PostMapping("/services") @SecurityRequirement(name="bearerAuth")
     public ResponseEntity<Map<String,Object>> create(Authentication auth,@Valid @RequestBody CreateServiceRequest req){ AuthUser u=(AuthUser)auth.getPrincipal(); var s=commands.createService(new CreateServiceCommand(req.title(),req.description(),req.basePrice(),req.currency(),req.categoryId(),req.deliveryDays(),req.tags(),u.id(),"Freelancer",u.roles().contains("FREELANCER"))); return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("id",s.id(),"title",s.title(),"status",s.status(),"createdAt",DateTimeFormatter.ISO_INSTANT.format(s.createdAt()))); }
@@ -53,10 +56,30 @@ public class MarketplaceController {
     public ResponseEntity<Void> delete(Authentication auth,@PathVariable UUID id){ AuthUser u=(AuthUser)auth.getPrincipal(); commands.softDeleteService(id,u.id().toString(),u.roles().contains("FREELANCER")?"FREELANCER":"CLIENT"); return ResponseEntity.noContent().build(); }
 
     @PostMapping(value="/services/{id}/media",consumes="multipart/form-data") @SecurityRequirement(name="bearerAuth")
-    public ResponseEntity<Map<String,Object>> upload(Authentication auth,@PathVariable UUID id,@RequestParam("file") MultipartFile file,@RequestParam(defaultValue="false") boolean primary) throws Exception { if(file.isEmpty()) throw new IllegalArgumentException("file is empty"); if(!"image/png".equalsIgnoreCase(file.getContentType()) && !"image/jpeg".equalsIgnoreCase(file.getContentType())) throw new IllegalArgumentException("unsupported content type"); AuthUser u=(AuthUser)auth.getPrincipal(); var m=commands.uploadMedia(id,u.id().toString(),u.roles().contains("FREELANCER")?"FREELANCER":"CLIENT",file.getContentType(),file.getOriginalFilename(),file.getBytes(),primary); return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("id",m.id(),"serviceId",m.serviceId(),"url",m.url(),"type",m.type(),"primary",m.primary())); }
+    public ResponseEntity<Map<String,Object>> upload(Authentication auth,@PathVariable UUID id,@RequestParam("file") MultipartFile file,@RequestParam(defaultValue="false") boolean primary) throws Exception { if(file.isEmpty()) throw new IllegalArgumentException("file is empty"); AuthUser u=(AuthUser)auth.getPrincipal(); var m=commands.uploadMedia(id,u.id().toString(),u.roles().contains("FREELANCER")?"FREELANCER":"CLIENT",file.getContentType(),file.getOriginalFilename(),file.getBytes(),primary); return ResponseEntity.status(HttpStatus.CREATED).body(mediaToMap(m)); }
 
     @DeleteMapping("/services/{id}/media/{mediaId}") @SecurityRequirement(name="bearerAuth")
     public ResponseEntity<Void> deleteMedia(Authentication auth,@PathVariable UUID id,@PathVariable UUID mediaId){ AuthUser u=(AuthUser)auth.getPrincipal(); commands.deleteMedia(id,mediaId,u.id().toString(),u.roles().contains("FREELANCER")?"FREELANCER":"CLIENT"); return ResponseEntity.noContent().build(); }
 
     @GetMapping("/categories") public List<Map<String,Object>> categories(){ List<Map<String,Object>> out = new ArrayList<>(); for(var c:queries.categories()){ out.add(Map.of("id",c.id(),"name",c.name())); } return out; }
+
+    private String thumbnailUrl(List<ServiceMedia> media) {
+        return media.stream().filter(ServiceMedia::primary).findFirst().or(() -> media.stream().findFirst()).map(ServiceMedia::url).orElse("");
+    }
+
+    private Map<String,Object> mediaToMap(ServiceMedia media) {
+        Map<String,Object> out = new LinkedHashMap<>();
+        out.put("id", media.id());
+        out.put("serviceId", media.serviceId());
+        out.put("url", media.url());
+        out.put("type", media.type());
+        out.put("primary", media.primary());
+        out.put("bucket", media.bucket());
+        out.put("objectPath", media.objectPath());
+        out.put("contentType", media.contentType());
+        out.put("sizeBytes", media.sizeBytes());
+        out.put("sortOrder", media.sortOrder());
+        out.put("createdAt", media.createdAt());
+        return out;
+    }
 }
