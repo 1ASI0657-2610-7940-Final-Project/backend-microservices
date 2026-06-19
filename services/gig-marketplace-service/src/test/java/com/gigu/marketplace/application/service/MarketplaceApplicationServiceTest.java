@@ -50,6 +50,19 @@ class MarketplaceApplicationServiceTest {
         assertThrows(SecurityException.class, () -> app.uploadMedia(sid,UUID.randomUUID().toString(),"FREELANCER","image/png","x.png",new byte[]{1},true));
     }
 
+    @Test void mediaUploadRejectsInvalidMimeType(){
+        UUID sid=UUID.randomUUID(); UUID owner=UUID.randomUUID();
+        when(serviceRepo.findById(sid)).thenReturn(Optional.of(new ServiceOffering(sid,owner,"Ana","t","d",BigDecimal.TEN,CurrencyCode.PEN,7,ServiceStatus.PUBLISHED,UUID.randomUUID(),"Design",List.of(),Instant.now(),Instant.now())));
+        assertThrows(IllegalArgumentException.class, () -> app.uploadMedia(sid,owner.toString(),"FREELANCER","application/pdf","x.pdf",new byte[]{1},true));
+    }
+
+    @Test void mediaUploadRejectsOversizedFile(){
+        UUID sid=UUID.randomUUID(); UUID owner=UUID.randomUUID();
+        when(serviceRepo.findById(sid)).thenReturn(Optional.of(new ServiceOffering(sid,owner,"Ana","t","d",BigDecimal.TEN,CurrencyCode.PEN,7,ServiceStatus.PUBLISHED,UUID.randomUUID(),"Design",List.of(),Instant.now(),Instant.now())));
+        byte[] bytes = new byte[5 * 1024 * 1024 + 1];
+        assertThrows(IllegalArgumentException.class, () -> app.uploadMedia(sid,owner.toString(),"FREELANCER","image/png","x.png",bytes,true));
+    }
+
     @Test void createGigSuccess() {
         UUID cat = UUID.randomUUID();
         UUID uid = UUID.randomUUID();
@@ -83,8 +96,9 @@ class MarketplaceApplicationServiceTest {
         UUID sid=UUID.randomUUID(); UUID owner=UUID.randomUUID(); UUID cat=UUID.randomUUID(); UUID mediaId=UUID.randomUUID();
         var s = new ServiceOffering(sid,owner,"Ana","t","d",BigDecimal.TEN,CurrencyCode.PEN,7,ServiceStatus.PUBLISHED,cat,"Design",List.of(),Instant.now(),Instant.now());
         when(serviceRepo.findById(sid)).thenReturn(Optional.of(s));
-        when(mediaRepo.findMediaById(mediaId)).thenReturn(Optional.of(new ServiceMedia(mediaId,sid,"u","IMAGE",true,"b","p","image/png",1,Instant.now())));
+        when(mediaRepo.findMediaById(mediaId)).thenReturn(Optional.of(new ServiceMedia(mediaId,sid,"u","IMAGE",true,"b","p","image/png",1,0,Instant.now())));
         app.deleteMedia(sid,mediaId,owner.toString(),"FREELANCER");
+        verify(storage).delete("b","p");
         verify(mediaRepo).delete(mediaId);
     }
 
