@@ -44,7 +44,7 @@ public class RestExceptionHandler {
 
     @ExceptionHandler(SupabaseStorageException.class)
     ResponseEntity<ErrorResponse> supabaseStorage(SupabaseStorageException e, HttpServletRequest request) {
-        return build(HttpStatus.BAD_GATEWAY, "SUPABASE_STORAGE_UPLOAD_FAILED", e.getMessage(), request, Map.of());
+        return build(HttpStatus.SERVICE_UNAVAILABLE, "SUPABASE_STORAGE_UNAVAILABLE", e.getMessage(), request, Map.of());
     }
 
     @ExceptionHandler({UnauthorizedActionException.class, SecurityException.class, AccessDeniedException.class})
