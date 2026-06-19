@@ -14,6 +14,7 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -29,6 +30,7 @@ public class SupabaseStorageAdapter implements StoragePort {
     private final String bucket;
     private final HttpClient httpClient;
 
+    @Autowired
     public SupabaseStorageAdapter(
             @Value("${SUPABASE_URL}") String url,
             @Value("${SUPABASE_SERVICE_ROLE_KEY}") String serviceRoleKey,
