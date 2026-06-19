@@ -9,6 +9,8 @@ spring:
     password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: org.postgresql.Driver
     hikari:
+      username: ${SPRING_DATASOURCE_USERNAME}
+      password: ${SPRING_DATASOURCE_PASSWORD}
       maximum-pool-size: 3
       minimum-idle: 1
       connection-timeout: 30000
@@ -42,3 +44,21 @@ management:
   endpoint:
     health:
       show-details: never
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      chatNotificationService:
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 5
+        minimumNumberOfCalls: 3
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 2
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        recordExceptions:
+          - java.io.IOException
+          - java.net.ConnectException
+          - java.net.SocketTimeoutException
+          - org.springframework.web.client.RestClientException
+        registerHealthIndicator: true
