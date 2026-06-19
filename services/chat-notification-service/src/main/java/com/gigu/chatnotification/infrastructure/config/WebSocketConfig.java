@@ -1,5 +1,6 @@
 package com.gigu.chatnotification.infrastructure.config;
 
+import com.gigu.chatnotification.infrastructure.eda.ExternalEdaConfig;
 import java.util.Arrays;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -14,6 +15,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Value("${CORS_ALLOWED_ORIGINS:http://localhost:5173,https://*.vercel.app}")
     private String corsAllowedOrigins;
 
+    private final ExternalEdaConfig edaConfig;
+
+    public WebSocketConfig(ExternalEdaConfig edaConfig) {
+        this.edaConfig = edaConfig;
+    }
+
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
         registry.enableSimpleBroker("/topic");
@@ -22,7 +29,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws")
+        registry.addEndpoint(edaConfig.webSocketPath())
             .setAllowedOriginPatterns(Arrays.stream(corsAllowedOrigins.split(","))
                 .map(String::trim)
                 .filter(origin -> !origin.isBlank())

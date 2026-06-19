@@ -3,15 +3,16 @@ package com.gigu.chatnotification.infrastructure.pubsub;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.gigu.chatnotification.application.event.ChatMessageCreatedEvent;
+import com.gigu.chatnotification.infrastructure.eda.ExternalEdaConfig;
 import java.util.Base64;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,11 +30,13 @@ public class ChatPubSubWebhookController {
     private final ChatPubSubProcessingService processingService;
 
     public ChatPubSubWebhookController(
-        @Value("${PUBSUB_PUSH_TOKEN:}") String pushToken,
+        ExternalEdaConfig edaConfig,
+        Environment environment,
         ObjectMapper objectMapper,
         ChatPubSubProcessingService processingService
     ) {
-        this.pushToken = pushToken == null ? "" : pushToken;
+        String tokenEnvName = edaConfig.pubsubPushTokenEnvName();
+        this.pushToken = environment.getProperty(tokenEnvName, "");
         this.objectMapper = objectMapper;
         this.processingService = processingService;
     }

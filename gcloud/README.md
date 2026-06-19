@@ -19,3 +19,15 @@ Or run all:
 `./gcloud/deploy-all.ps1`
 
 All commands read env vars from `_local-gcloud-config/*.env.yaml`.
+
+## Chat EDA config
+- Bucket: `gigu-external-config`
+- Object: `prod/eda-pubsub-config.json`
+- Cloud Run env vars:
+  - `EDA_CONFIG_BUCKET`
+  - `EDA_CONFIG_OBJECT`
+  - `PUBSUB_PUSH_TOKEN`
+  - `GCP_PROJECT_ID`
+- Required IAM on the Cloud Run service account:
+  - `roles/storage.objectViewer`
+- Pub/Sub and WebSocket use the Cloud Run service identity and GCS config file, not committed service account JSON keys.

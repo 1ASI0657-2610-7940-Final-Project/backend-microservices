@@ -1,0 +1,14 @@
+{
+  "provider": "google-pubsub",
+  "projectId": "dosys-rest-api",
+  "topicName": "gigu-chat-events",
+  "pushSubscriptionName": "gigu-chat-events-push-chat",
+  "pushWebhookPath": "/internal/pubsub/chat-events",
+  "chatMessageTopic": "/topic/conversations/{conversationId}",
+  "notificationTopic": "/topic/notifications/{userId}",
+  "webSocketPath": "/ws",
+  "credentialsStrategy": "cloud-run-service-account",
+  "secrets": {
+    "pubsubPushTokenEnv": "PUBSUB_PUSH_TOKEN"
+  }
+}
