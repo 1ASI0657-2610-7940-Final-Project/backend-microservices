@@ -32,3 +32,5 @@ app:
     service-role-key: ${SUPABASE_SERVICE_ROLE_KEY}
     storage:
       portfolio-bucket: ${SUPABASE_STORAGE_BUCKET_PORTFOLIO}
+
+SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN}

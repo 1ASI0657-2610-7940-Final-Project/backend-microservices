@@ -29,6 +29,7 @@ class AccessIntegrationTest {
         r.add("SPRING_DATASOURCE_USERNAME", postgres::getUsername);
         r.add("SPRING_DATASOURCE_PASSWORD", postgres::getPassword);
         r.add("JWT_SECRET", () -> "jwt-secret-change-me-jwt-secret-change-me");
+        r.add("SERVICE_TOKEN", () -> "svc-token");
     }
 
     @Autowired MockMvc mockMvc;
@@ -63,5 +64,37 @@ class AccessIntegrationTest {
     @Test
     void actuatorHealthIsPublic() throws Exception {
         mockMvc.perform(get("/actuator/health")).andExpect(status().isOk());
+    }
+
+    @Test
+    void internalUserSummaryRequiresServiceToken() throws Exception {
+        mockMvc.perform(get("/api/v1/access/internal/users/11111111-1111-1111-1111-111111111111"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void internalUserSummaryReturnsResolvedDisplayName() throws Exception {
+        var signUp = Map.of(
+                "firstName", "Carlos",
+                "lastName", "Rojas",
+                "email", "carlos.rojas@upc.edu.pe",
+                "password", "Password123!",
+                "role", "FREELANCER");
+
+        String userId = mockMvc.perform(post("/api/v1/access/sign-up")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(signUp)))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        String createdId = mapper.readTree(userId).get("id").asText();
+
+        mockMvc.perform(get("/api/v1/access/internal/users/" + createdId)
+                        .header("X-Service-Token", "svc-token"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(createdId))
+                .andExpect(jsonPath("$.displayName").value("Carlos Rojas"));
     }
 }

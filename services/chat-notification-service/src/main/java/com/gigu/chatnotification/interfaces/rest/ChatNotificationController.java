@@ -2,6 +2,7 @@ package com.gigu.chatnotification.interfaces.rest;
 
 import com.gigu.chatnotification.application.dto.*;
 import com.gigu.chatnotification.application.port.in.ChatNotificationUseCase;
+import com.gigu.chatnotification.application.service.ParticipantDisplayNameResolver;
 import com.gigu.chatnotification.infrastructure.security.AuthUser;
 import com.gigu.chatnotification.interfaces.rest.dto.*;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -17,17 +18,18 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/chat")
 public class ChatNotificationController {
     private final ChatNotificationUseCase service;
+    private final ParticipantDisplayNameResolver participantDisplayNameResolver;
     private final String serviceToken;
-    public ChatNotificationController(ChatNotificationUseCase service, @Value("${SERVICE_TOKEN:internal-token}") String serviceToken){this.service=service;this.serviceToken=serviceToken;}
+    public ChatNotificationController(ChatNotificationUseCase service, ParticipantDisplayNameResolver participantDisplayNameResolver, @Value("${SERVICE_TOKEN:internal-token}") String serviceToken){this.service=service;this.participantDisplayNameResolver=participantDisplayNameResolver;this.serviceToken=serviceToken;}
 
     @PostMapping("/conversations") @SecurityRequirement(name="bearerAuth")
     public ResponseEntity<Map<String,Object>> createConversation(Authentication auth, @Valid @RequestBody CreateConversationBody body){ AuthUser u=(AuthUser)auth.getPrincipal(); var c=service.createOrOpenConversation(new CreateConversationCommand(body.participantId(),body.projectId(),u.id())); Map<String,Object> response=new LinkedHashMap<>(); response.put("id",c.id()); response.put("participants",List.of(c.participantA(),c.participantB())); response.put("projectId",c.projectId()); response.put("createdAt",DateTimeFormatter.ISO_INSTANT.format(c.createdAt())); return ResponseEntity.status(HttpStatus.CREATED).body(response); }
 
     @GetMapping("/conversations") @SecurityRequirement(name="bearerAuth")
-    public List<Map<String,Object>> conversations(Authentication auth){ AuthUser u=(AuthUser)auth.getPrincipal(); List<Map<String,Object>> out=new ArrayList<>(); for(var c:service.listConversations(u.id())){ UUID other=c.participantA().equals(u.id())?c.participantB():c.participantA(); out.add(Map.of("id",c.id(),"lastMessage","","lastMessageAt",DateTimeFormatter.ISO_INSTANT.format(c.createdAt()),"unreadCount",0,"participants",List.of(Map.of("id",other,"displayName","User")))); } return out; }
+    public List<Map<String,Object>> conversations(Authentication auth){ AuthUser u=(AuthUser)auth.getPrincipal(); List<Map<String,Object>> out=new ArrayList<>(); for(var c:service.listConversations(u.id())){ UUID other=c.participantA().equals(u.id())?c.participantB():c.participantA(); var participant=participantDisplayNameResolver.resolve(other); out.add(Map.of("id",c.id(),"lastMessage","","lastMessageAt",DateTimeFormatter.ISO_INSTANT.format(c.createdAt()),"unreadCount",0,"projectId",c.projectId(),"participants",List.of(participantResponse(participant)))); } return out; }
 
     @GetMapping("/conversations/{id}") @SecurityRequirement(name="bearerAuth")
-    public Map<String,Object> conversationDetail(Authentication auth,@PathVariable UUID id){ AuthUser u=(AuthUser)auth.getPrincipal(); var c=service.getConversation(id,u.id()); UUID other=c.participantA().equals(u.id())?c.participantB():c.participantA(); Map<String,Object> participant=new LinkedHashMap<>(); participant.put("id",other); participant.put("displayName","User"); Map<String,Object> response=new LinkedHashMap<>(); response.put("id",c.id()); response.put("projectId",c.projectId()); response.put("participants",List.of(participant)); response.put("createdAt",DateTimeFormatter.ISO_INSTANT.format(c.createdAt())); return response; }
+    public Map<String,Object> conversationDetail(Authentication auth,@PathVariable UUID id){ AuthUser u=(AuthUser)auth.getPrincipal(); var c=service.getConversation(id,u.id()); UUID other=c.participantA().equals(u.id())?c.participantB():c.participantA(); var participant=participantDisplayNameResolver.resolve(other); Map<String,Object> response=new LinkedHashMap<>(); response.put("id",c.id()); response.put("projectId",c.projectId()); response.put("participants",List.of(participantResponse(participant))); response.put("createdAt",DateTimeFormatter.ISO_INSTANT.format(c.createdAt())); return response; }
 
     @GetMapping("/conversations/{id}/messages") @SecurityRequirement(name="bearerAuth")
     public Map<String,Object> messages(Authentication auth,@PathVariable UUID id,@RequestParam(defaultValue="1") int page,@RequestParam(defaultValue="30") int pageSize){ AuthUser u=(AuthUser)auth.getPrincipal(); var m=service.listMessages(id,u.id(),page,pageSize); var data=m.data().stream().map(x->Map.of("id",x.id(),"conversationId",x.conversationId(),"senderId",x.senderId(),"content",x.content(),"sentAt",DateTimeFormatter.ISO_INSTANT.format(x.sentAt()))).toList(); return Map.of("data",data,"page",m.page(),"pageSize",m.pageSize(),"total",m.total()); }
@@ -66,6 +68,19 @@ public class ChatNotificationController {
         }
         if (n.resourceId() != null) {
             response.put("resourceId", n.resourceId());
+        }
+        return response;
+    }
+
+    private Map<String, Object> participantResponse(ParticipantDisplayNameResolver.ParticipantView participant) {
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("id", participant.id());
+        response.put("displayName", participant.displayName());
+        if (participant.role() != null && !participant.role().isBlank()) {
+            response.put("role", participant.role());
+        }
+        if (participant.avatarUrl() != null && !participant.avatarUrl().isBlank()) {
+            response.put("avatarUrl", participant.avatarUrl());
         }
         return response;
     }
