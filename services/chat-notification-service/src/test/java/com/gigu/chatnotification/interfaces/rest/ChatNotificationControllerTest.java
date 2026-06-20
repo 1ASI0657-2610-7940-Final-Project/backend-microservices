@@ -2,12 +2,11 @@ package com.gigu.chatnotification.interfaces.rest;
 
 import com.gigu.chatnotification.application.dto.CreateConversationCommand;
 import com.gigu.chatnotification.application.port.in.ChatNotificationUseCase;
+import com.gigu.chatnotification.application.service.ParticipantDisplayNameResolver;
 import com.gigu.chatnotification.domain.model.Conversation;
 import com.gigu.chatnotification.infrastructure.security.AuthUser;
 import java.time.Instant;
-import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -25,6 +24,7 @@ class ChatNotificationControllerTest {
     @Test
     void createConversationAllowsNullProjectId() {
         ChatNotificationUseCase service = mock(ChatNotificationUseCase.class);
+        ParticipantDisplayNameResolver resolver = mock(ParticipantDisplayNameResolver.class);
         UUID actorId = UUID.randomUUID();
         UUID otherId = UUID.randomUUID();
         Conversation conversation = new Conversation(UUID.randomUUID(), actorId, otherId, null, Instant.parse("2026-06-06T22:00:00Z"));
@@ -33,7 +33,7 @@ class ChatNotificationControllerTest {
         Authentication authentication = mock(Authentication.class);
         when(authentication.getPrincipal()).thenReturn(new AuthUser(actorId, Set.of("CLIENT")));
 
-        ChatNotificationController controller = new ChatNotificationController(service, "svc-token");
+        ChatNotificationController controller = new ChatNotificationController(service, resolver, "svc-token");
         var response = controller.createConversation(authentication, new com.gigu.chatnotification.interfaces.rest.dto.CreateConversationBody(otherId, null));
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
@@ -46,20 +46,23 @@ class ChatNotificationControllerTest {
     @Test
     void conversationDetailAllowsNullProjectId() {
         ChatNotificationUseCase service = mock(ChatNotificationUseCase.class);
+        ParticipantDisplayNameResolver resolver = mock(ParticipantDisplayNameResolver.class);
         UUID actorId = UUID.randomUUID();
         UUID otherId = UUID.randomUUID();
         UUID conversationId = UUID.randomUUID();
         Conversation conversation = new Conversation(conversationId, actorId, otherId, null, Instant.parse("2026-06-06T22:00:00Z"));
         when(service.getConversation(conversationId, actorId)).thenReturn(conversation);
+        when(resolver.resolve(otherId)).thenReturn(new ParticipantDisplayNameResolver.ParticipantView(otherId, "Carlos Rojas", "FREELANCER", null));
 
         Authentication authentication = mock(Authentication.class);
         when(authentication.getPrincipal()).thenReturn(new AuthUser(actorId, Set.of("CLIENT")));
 
-        ChatNotificationController controller = new ChatNotificationController(service, "svc-token");
+        ChatNotificationController controller = new ChatNotificationController(service, resolver, "svc-token");
         Map<String, Object> response = controller.conversationDetail(authentication, conversationId);
 
         assertEquals(conversationId, response.get("id"));
         assertNull(response.get("projectId"));
         assertEquals(1, ((java.util.List<?>) response.get("participants")).size());
+        assertEquals("Carlos Rojas", ((Map<?, ?>) ((java.util.List<?>) response.get("participants")).getFirst()).get("displayName"));
     }
 }

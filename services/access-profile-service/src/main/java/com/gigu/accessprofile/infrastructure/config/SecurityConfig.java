@@ -38,6 +38,7 @@ public class SecurityConfig {
                                 "/actuator/health",
                                 "/api/v1/access/sign-up",
                                 "/api/v1/access/login",
+                                "/api/v1/access/internal/users/**",
                                 "/api/v1/access/freelancer-profiles/**"
                         ).permitAll()
                         .anyRequest().authenticated())

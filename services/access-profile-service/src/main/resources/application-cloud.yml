@@ -34,6 +34,8 @@ app:
     storage:
       portfolio-bucket: ${SUPABASE_STORAGE_BUCKET_PORTFOLIO}
 
+SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN}
+
 management:
   endpoints:
     web:
