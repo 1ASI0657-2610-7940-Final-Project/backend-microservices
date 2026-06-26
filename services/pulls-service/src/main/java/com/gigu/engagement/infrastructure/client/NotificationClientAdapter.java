@@ -33,17 +33,32 @@ public class NotificationClientAdapter implements NotificationClientPort {
 
     @Override
     @CircuitBreaker(name = CIRCUIT_BREAKER_NAME, fallbackMethod = "notifyBestEffortFallback")
-    public void notifyBestEffort(String type, String recipientId, String message) {
+    public void notifyBestEffort(String type, String recipientId, String message, String resourceType, java.util.UUID resourceId) {
         if (serviceToken == null || serviceToken.isBlank()) {
             log.warn("internal service token not configured, skipping notification");
             return;
         }
-        String body = "{\"recipientId\":\"" + recipientId + "\",\"type\":\"" + type + "\",\"title\":\"Notification\",\"message\":\"" + message.replace("\"", "\\\"") + "\"}";
+        String safeTitle = "Notification";
+        String safeMessage = message == null ? "" : message.replace("\"", "\\\"");
+        String safeResourceType = resourceType == null ? "" : resourceType.replace("\"", "\\\"");
+        String safeResourceId = resourceId == null ? null : resourceId.toString();
+        StringBuilder body = new StringBuilder("{")
+                .append("\"recipientId\":\"").append(recipientId).append("\",")
+                .append("\"type\":\"").append(type).append("\",")
+                .append("\"title\":\"").append(safeTitle).append("\",")
+                .append("\"message\":\"").append(safeMessage).append("\"");
+        if (safeResourceType != null && !safeResourceType.isBlank()) {
+            body.append(",\"resourceType\":\"").append(safeResourceType).append("\"");
+        }
+        if (safeResourceId != null && !safeResourceId.isBlank()) {
+            body.append(",\"resourceId\":\"").append(safeResourceId).append("\"");
+        }
+        body.append("}");
         HttpRequest request = HttpRequest.newBuilder(URI.create(chatNotificationUrl + "/api/v1/chat/internal/notifications"))
                 .header("Content-Type", "application/json")
                 .header("X-Service-Token", serviceToken)
                 .timeout(Duration.ofSeconds(3))
-                .POST(HttpRequest.BodyPublishers.ofString(body))
+                .POST(HttpRequest.BodyPublishers.ofString(body.toString()))
                 .build();
         try {
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -58,7 +73,7 @@ public class NotificationClientAdapter implements NotificationClientPort {
         }
     }
 
-    void notifyBestEffortFallback(String type, String recipientId, String message, Throwable throwable) {
+    void notifyBestEffortFallback(String type, String recipientId, String message, String resourceType, java.util.UUID resourceId, Throwable throwable) {
         log.warn(
                 "circuit breaker fallback triggered target=chat-notification-service operation=create internal notification recipientId={} type={} cause={}",
                 recipientId,

@@ -68,20 +68,60 @@ class EngagementApplicationServiceTest {
     @Test void incomingForbiddenForClient(){ assertThrows(SecurityException.class, () -> service.incoming(UUID.randomUUID().toString(),"CLIENT")); }
     @Test void outgoingForbiddenForFreelancer(){ assertThrows(SecurityException.class, () -> service.outgoing(UUID.randomUUID().toString(),"FREELANCER")); }
 
-    @Test void freelancerAcceptsCreatesAgreementAndProject(){
+    @Test void acceptRequestUsesOriginalValuesWhenFinalTermsAreNull(){
         UUID reqId=UUID.randomUUID(), sid=UUID.randomUUID(), cid=UUID.randomUUID(), fid=UUID.randomUUID();
-        ProjectRequest pr=new ProjectRequest(reqId,sid,cid,fid,"m",BigDecimal.valueOf(200),CurrencyCode.PEN,7,ProjectRequestStatus.PENDING,Instant.now());
-        when(repo.findRequest(reqId)).thenReturn(Optional.of(pr)); when(repo.updateRequest(any())).thenAnswer(i->i.getArgument(0)); when(repo.saveAgreement(any())).thenAnswer(i->i.getArgument(0)); when(repo.saveProject(any())).thenAnswer(i->i.getArgument(0));
-        var res=service.decide(reqId,new DecisionCommand(ProjectRequestStatus.ACCEPTED,BigDecimal.valueOf(200),7,"ok","FREELANCER",fid.toString()));
-        assertNotNull(res.agreement()); assertNotNull(res.project());
+        BigDecimal proposedPrice = BigDecimal.valueOf(200);
+        int proposedDays = 7;
+        ProjectRequest pr=new ProjectRequest(reqId,sid,cid,fid,"m",proposedPrice,CurrencyCode.PEN,proposedDays,ProjectRequestStatus.PENDING,Instant.now());
+        when(repo.findRequest(reqId)).thenReturn(Optional.of(pr));
+        when(repo.updateRequest(any())).thenAnswer(i->i.getArgument(0));
+        when(repo.saveAgreement(any())).thenAnswer(i->i.getArgument(0));
+        when(repo.saveProject(any())).thenAnswer(i->i.getArgument(0));
+
+        var res=service.decide(reqId,new DecisionCommand(ProjectRequestStatus.ACCEPTED,null,null,"ok","FREELANCER",fid.toString()));
+
+        assertEquals(ProjectRequestStatus.ACCEPTED.name(), res.status());
+        assertNotNull(res.agreement());
+        assertNotNull(res.project());
+        assertEquals(proposedPrice, res.agreement().finalPrice());
+        assertEquals(proposedDays, res.agreement().finalDeliveryDays());
+        assertEquals(proposedPrice, res.project().finalPrice());
     }
 
-    @Test void freelancerRejectsNoProject(){
+    @Test void acceptRequestCreatesInitialStatusHistory(){
         UUID reqId=UUID.randomUUID(), sid=UUID.randomUUID(), cid=UUID.randomUUID(), fid=UUID.randomUUID();
         ProjectRequest pr=new ProjectRequest(reqId,sid,cid,fid,"m",BigDecimal.valueOf(200),CurrencyCode.PEN,7,ProjectRequestStatus.PENDING,Instant.now());
-        when(repo.findRequest(reqId)).thenReturn(Optional.of(pr)); when(repo.updateRequest(any())).thenAnswer(i->i.getArgument(0));
+        when(repo.findRequest(reqId)).thenReturn(Optional.of(pr));
+        when(repo.updateRequest(any())).thenAnswer(i->i.getArgument(0));
+        when(repo.saveAgreement(any())).thenAnswer(i->i.getArgument(0));
+        when(repo.saveProject(any())).thenAnswer(i->i.getArgument(0));
+        when(repo.saveStatusHistory(any())).thenAnswer(i->i.getArgument(0));
+
+        var res=service.decide(reqId,new DecisionCommand(ProjectRequestStatus.ACCEPTED,BigDecimal.valueOf(250),10,"ok","FREELANCER",fid.toString()));
+
+        assertNotNull(res.project());
+        verify(repo).saveProject(any());
+        ArgumentCaptor<ProjectStatusHistory> historyCaptor = ArgumentCaptor.forClass(ProjectStatusHistory.class);
+        verify(repo, times(1)).saveStatusHistory(historyCaptor.capture());
+        assertEquals(res.project().id(), historyCaptor.getValue().projectId());
+        assertEquals(ProjectStatus.PENDING, historyCaptor.getValue().status());
+        assertEquals("created", historyCaptor.getValue().comment());
+    }
+
+    @Test void rejectRequestDoesNotCreateAgreementOrProject(){
+        UUID reqId=UUID.randomUUID(), sid=UUID.randomUUID(), cid=UUID.randomUUID(), fid=UUID.randomUUID();
+        ProjectRequest pr=new ProjectRequest(reqId,sid,cid,fid,"m",BigDecimal.valueOf(200),CurrencyCode.PEN,7,ProjectRequestStatus.PENDING,Instant.now());
+        when(repo.findRequest(reqId)).thenReturn(Optional.of(pr));
+        when(repo.updateRequest(any())).thenAnswer(i->i.getArgument(0));
+
         var res=service.decide(reqId,new DecisionCommand(ProjectRequestStatus.REJECTED,null,null,"no","FREELANCER",fid.toString()));
+
+        assertEquals(ProjectRequestStatus.REJECTED.name(), res.status());
+        assertNull(res.agreement());
         assertNull(res.project());
+        verify(repo, never()).saveAgreement(any());
+        verify(repo, never()).saveProject(any());
+        verify(repo, never()).saveStatusHistory(any());
     }
     @Test void decisionForbiddenIfNotAssignedFreelancer(){
         UUID reqId=UUID.randomUUID(), sid=UUID.randomUUID(), cid=UUID.randomUUID(), fid=UUID.randomUUID();
@@ -96,12 +136,34 @@ class EngagementApplicationServiceTest {
         when(repo.findProject(p)).thenReturn(Optional.of(pr));
         assertThrows(ResponseStatusException.class,()->service.updateStatus(p,new UpdateStatusCommand(ProjectStatus.IN_PROGRESS,"x","PARTICIPANT",cid.toString())));
     }
-    @Test void validStatusTransitionSuccess(){
+    @Test void updateStatusNotifiesOnlyTheOtherParticipant_whenClientUpdates(){
         UUID p=UUID.randomUUID(), cid=UUID.randomUUID(), fid=UUID.randomUUID();
         Project pr=new Project(p,UUID.randomUUID(),UUID.randomUUID(),UUID.randomUUID(),cid,fid,ProjectStatus.IN_PROGRESS,BigDecimal.TEN,CurrencyCode.PEN,Instant.now(),Instant.now());
-        when(repo.findProject(p)).thenReturn(Optional.of(pr)); when(repo.updateProject(any())).thenAnswer(i->i.getArgument(0)); when(repo.saveStatusHistory(any())).thenAnswer(i->i.getArgument(0));
+        when(repo.findProject(p)).thenReturn(Optional.of(pr));
+        when(repo.updateProject(any())).thenAnswer(i->i.getArgument(0));
+        when(repo.saveStatusHistory(any())).thenAnswer(i->i.getArgument(0));
+
         var res=service.updateStatus(p,new UpdateStatusCommand(ProjectStatus.DELIVERED,"done","PARTICIPANT",cid.toString()));
+
         assertEquals("DELIVERED", res.currentStatus());
+        verify(repo).saveStatusHistory(argThat(history -> history.projectId().equals(p) && history.status() == ProjectStatus.DELIVERED && "done".equals(history.comment())));
+        verify(notifications).notifyBestEffort(eq("PROJECT_STATUS_CHANGED"), eq(fid.toString()), eq("Project status changed"), eq("PROJECT"), eq(p));
+        verify(notifications, never()).notifyBestEffort(eq("PROJECT_STATUS_CHANGED"), eq(cid.toString()), any(), any(), any());
+    }
+
+    @Test void updateStatusNotifiesOnlyTheOtherParticipant_whenFreelancerUpdates(){
+        UUID p=UUID.randomUUID(), cid=UUID.randomUUID(), fid=UUID.randomUUID();
+        Project pr=new Project(p,UUID.randomUUID(),UUID.randomUUID(),UUID.randomUUID(),cid,fid,ProjectStatus.IN_PROGRESS,BigDecimal.TEN,CurrencyCode.PEN,Instant.now(),Instant.now());
+        when(repo.findProject(p)).thenReturn(Optional.of(pr));
+        when(repo.updateProject(any())).thenAnswer(i->i.getArgument(0));
+        when(repo.saveStatusHistory(any())).thenAnswer(i->i.getArgument(0));
+
+        var res=service.updateStatus(p,new UpdateStatusCommand(ProjectStatus.CANCELLED,"blocked","PARTICIPANT",fid.toString()));
+
+        assertEquals("CANCELLED", res.currentStatus());
+        verify(repo).saveStatusHistory(argThat(history -> history.projectId().equals(p) && history.status() == ProjectStatus.CANCELLED && "blocked".equals(history.comment())));
+        verify(notifications).notifyBestEffort(eq("PROJECT_STATUS_CHANGED"), eq(cid.toString()), eq("Project status changed"), eq("PROJECT"), eq(p));
+        verify(notifications, never()).notifyBestEffort(eq("PROJECT_STATUS_CHANGED"), eq(fid.toString()), any(), any(), any());
     }
     @Test void projectDetailRequiresParticipant(){
         UUID p=UUID.randomUUID(), cid=UUID.randomUUID(), fid=UUID.randomUUID();
@@ -154,6 +216,22 @@ class EngagementApplicationServiceTest {
         Project pr=new Project(p,UUID.randomUUID(),UUID.randomUUID(),UUID.randomUUID(),cid,fid,ProjectStatus.FINISHED,BigDecimal.TEN,CurrencyCode.PEN,Instant.now(),Instant.now());
         when(repo.findProject(p)).thenReturn(Optional.of(pr));
         assertThrows(IllegalArgumentException.class,()->service.createReview(p,new CreateReviewCommand(fid,6,"ok",cid.toString())));
+    }
+
+    @Test void reviewReputationUpdateFailureDoesNotRollbackReview(){
+        UUID p=UUID.randomUUID(), cid=UUID.randomUUID(), fid=UUID.randomUUID();
+        Project pr=new Project(p,UUID.randomUUID(),UUID.randomUUID(),UUID.randomUUID(),cid,fid,ProjectStatus.FINISHED,BigDecimal.TEN,CurrencyCode.PEN,Instant.now(),Instant.now());
+        Review saved = new Review(UUID.randomUUID(), p, cid, fid, 5, "ok", Instant.now());
+        when(repo.findProject(p)).thenReturn(Optional.of(pr));
+        when(repo.existsReview(p,cid)).thenReturn(false);
+        when(repo.saveReview(any())).thenReturn(saved);
+        doThrow(new RuntimeException("marketplace down")).when(marketplace).updateReputationBestEffort(fid);
+
+        var result = service.createReview(p,new CreateReviewCommand(fid,5,"ok",cid.toString()));
+
+        assertEquals(saved, result);
+        verify(repo).saveReview(any());
+        verify(marketplace).updateReputationBestEffort(fid);
     }
 
     @Test void priceSuggestionDeterministic(){
