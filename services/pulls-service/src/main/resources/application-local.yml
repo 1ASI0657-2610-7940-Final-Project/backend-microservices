@@ -3,9 +3,9 @@ server:
 
 spring:
   datasource:
-    url: ${SUPABASE_JDBC_URL}
-    username: ${SUPABASE_DB_USERNAME}
-    password: ${SUPABASE_DB_PASSWORD}
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 3
@@ -32,5 +32,5 @@ app:
     marketplace-url: ${GIG_MARKETPLACE_SERVICE_URL}
     chat-notification-url: ${CHAT_NOTIFICATION_SERVICE_URL}
     internal-service-token: ${INTERNAL_SERVICE_TOKEN}
-SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN}
 
+SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN}

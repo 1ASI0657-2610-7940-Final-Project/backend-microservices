@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
@@ -58,7 +58,7 @@ class NotificationClientAdapterTest {
         requestCount.set(0);
         responseMode.set(0);
 
-        assertDoesNotThrow(() -> adapter.notifyBestEffort("REQUEST_CREATED", "recipient-1", "New request"));
+        assertDoesNotThrow(() -> adapter.notifyBestEffort("REQUEST_CREATED", "recipient-1", "New request", "REQUEST", UUID.randomUUID()));
         assertEquals(1, requestCount.get());
     }
 
@@ -67,10 +67,10 @@ class NotificationClientAdapterTest {
         requestCount.set(0);
         responseMode.set(1);
 
-        assertDoesNotThrow(() -> adapter.notifyBestEffort("REQUEST_CREATED", "recipient-1", "New request"));
-        assertDoesNotThrow(() -> adapter.notifyBestEffort("REQUEST_CREATED", "recipient-1", "New request"));
-        assertDoesNotThrow(() -> adapter.notifyBestEffort("REQUEST_CREATED", "recipient-1", "New request"));
-        assertDoesNotThrow(() -> adapter.notifyBestEffort("REQUEST_CREATED", "recipient-1", "New request"));
+        assertDoesNotThrow(() -> adapter.notifyBestEffort("REQUEST_CREATED", "recipient-1", "New request", "REQUEST", UUID.randomUUID()));
+        assertDoesNotThrow(() -> adapter.notifyBestEffort("REQUEST_CREATED", "recipient-1", "New request", "REQUEST", UUID.randomUUID()));
+        assertDoesNotThrow(() -> adapter.notifyBestEffort("REQUEST_CREATED", "recipient-1", "New request", "REQUEST", UUID.randomUUID()));
+        assertDoesNotThrow(() -> adapter.notifyBestEffort("REQUEST_CREATED", "recipient-1", "New request", "REQUEST", UUID.randomUUID()));
 
         assertEquals(3, requestCount.get());
     }

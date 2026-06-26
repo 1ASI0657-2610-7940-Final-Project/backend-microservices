@@ -1,0 +1,64 @@
+server:
+  port: ${PORT:8080}
+  forward-headers-strategy: framework
+
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      username: ${SPRING_DATASOURCE_USERNAME}
+      password: ${SPRING_DATASOURCE_PASSWORD}
+      maximum-pool-size: 3
+      minimum-idle: 1
+      connection-timeout: 30000
+  sql:
+    init:
+      mode: always
+  jpa:
+    hibernate:
+      ddl-auto: update
+    defer-datasource-initialization: false
+    properties:
+      hibernate:
+        default_schema: engagement_schema
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
+
+app:
+  jwt:
+    secret: ${JWT_SECRET}
+  services:
+    access-profile-url: ${ACCESS_PROFILE_SERVICE_URL}
+    marketplace-url: ${GIG_MARKETPLACE_SERVICE_URL}
+    chat-notification-url: ${CHAT_NOTIFICATION_SERVICE_URL}
+    internal-service-token: ${INTERNAL_SERVICE_TOKEN}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      chatNotificationService:
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 5
+        minimumNumberOfCalls: 3
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 2
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        recordExceptions:
+          - java.io.IOException
+          - java.net.ConnectException
+          - java.net.SocketTimeoutException
+          - org.springframework.web.client.RestClientException
+        registerHealthIndicator: true
