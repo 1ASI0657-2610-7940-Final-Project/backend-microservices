@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -50,6 +51,14 @@ public class RestExceptionHandler {
 
     @ExceptionHandler({BusinessRuleViolationException.class, IllegalArgumentException.class})
     ResponseEntity<ErrorResponse> badRequest(RuntimeException e, HttpServletRequest request) { return build(HttpStatus.BAD_REQUEST, "BAD_REQUEST", e.getMessage(), request, Map.of()); }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    ResponseEntity<ErrorResponse> responseStatus(ResponseStatusException e, HttpServletRequest request) {
+        HttpStatus status = HttpStatus.valueOf(e.getStatusCode().value());
+        String code = status == HttpStatus.CONFLICT ? "CONFLICT" : status.name();
+        String message = e.getReason() != null && !e.getReason().isBlank() ? e.getReason() : status.getReasonPhrase();
+        return build(status, code, message, request, Map.of());
+    }
 
     @ExceptionHandler(Exception.class)
     ResponseEntity<ErrorResponse> internal(Exception e, HttpServletRequest request) {
