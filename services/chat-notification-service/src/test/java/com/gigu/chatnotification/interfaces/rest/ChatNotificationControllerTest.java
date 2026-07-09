@@ -9,6 +9,7 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
@@ -17,7 +18,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import java.util.List;
 
 class ChatNotificationControllerTest {
 
@@ -64,5 +64,29 @@ class ChatNotificationControllerTest {
         assertNull(response.get("projectId"));
         assertEquals(1, ((java.util.List<?>) response.get("participants")).size());
         assertEquals("Carlos Rojas", ((Map<?, ?>) ((java.util.List<?>) response.get("participants")).getFirst()).get("displayName"));
+    }
+
+    @Test
+    void conversationsAllowsNullProjectId() {
+        ChatNotificationUseCase service = mock(ChatNotificationUseCase.class);
+        ParticipantDisplayNameResolver resolver = mock(ParticipantDisplayNameResolver.class);
+        UUID actorId = UUID.randomUUID();
+        UUID otherId = UUID.randomUUID();
+        UUID conversationId = UUID.randomUUID();
+        Conversation conversation = new Conversation(conversationId, actorId, otherId, null, Instant.parse("2026-06-06T22:00:00Z"));
+        when(service.listConversations(actorId)).thenReturn(List.of(conversation));
+        when(resolver.resolve(otherId)).thenReturn(new ParticipantDisplayNameResolver.ParticipantView(otherId, "Carlos Rojas", "FREELANCER", null));
+
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(new AuthUser(actorId, Set.of("CLIENT")));
+
+        ChatNotificationController controller = new ChatNotificationController(service, resolver, "svc-token");
+        List<Map<String, Object>> response = controller.conversations(authentication);
+
+        assertEquals(1, response.size());
+        assertEquals(conversationId, response.getFirst().get("id"));
+        assertNull(response.getFirst().get("projectId"));
+        assertEquals("", response.getFirst().get("lastMessage"));
+        assertEquals("Carlos Rojas", ((Map<?, ?>) ((List<?>) response.getFirst().get("participants")).getFirst()).get("displayName"));
     }
 }
